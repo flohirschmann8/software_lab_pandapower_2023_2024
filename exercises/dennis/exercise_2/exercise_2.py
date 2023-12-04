@@ -1,6 +1,7 @@
 import pandapower as pp
 import pandapower.networks as nw
 
+# load the network
 mv_oberrhein = nw.mv_oberrhein(scenario="generation")
 
 # scaling factors before update
