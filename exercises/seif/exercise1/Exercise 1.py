@@ -1,0 +1,11 @@
+import pandapower as pp
+net = pp.create_empty_network()
+pp.create_bus(net, vn_kv=20.0)
+pp.create_bus(net, vn_kv=0.4)
+pp.create_bus(net, vn_kv=0.4)
+pp.create_ext_grid(net, bus=0, vm_pu=1.02)
+pp.create_load(net, bus=2, p_mw=0.1)
+pp.create_transformer(net, hv_bus=0, lv_bus=1, std_type="0.4 MVA 20/0.4 kV")
+pp.create_line(net, from_bus=1, to_bus=2,length_km=0.1, std_type="N2XS(FL)2Y 1x300 RM/35 64/110 kV")
+print(net)
+print(net.bus)
