@@ -59,6 +59,9 @@ plot.draw_collections([line_collection, bus_collection])
 overloaded_lines = mv_oberrhein.line[mv_oberrhein.res_line["loading_percent"] > 100.0]
 # creating a function to replace lines with other std-type lines
 # %%
+
+# another function to change the std_type is pp.change_std_type()
+# it dose ecxactly what i want and is pre build
 def replace_lines(net,lines,new_std_type: str):
     
     for i in range(len(lines)):

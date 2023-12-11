@@ -1,0 +1,74 @@
+import pandas as pd
+import pandapower as pp
+import copy
+import pandapower.networks as nw
+from numpy.random import choice # random choice out of an list
+from numpy.random import normal # normal distribution function
+#%%
+def violations(net):
+    # run the power flow and check for vioations
+    pp.runpp(net)
+    if net.res_line.loading_percent.max() > 95:
+        return (True, "Line \n Overloading", 1)
+    elif net.res_trafo.loading_percent.max() > 100:
+        return (True, "Transformer \n Overloading", 2)
+    elif net.res_bus.vm_pu.max() > 1.06:
+        return (True, "Voltage \n Violation", 3)
+    else:
+        return (False, None,0)
+    
+def chose_bus(net):
+    # chose a random bus from the network to attach a new load to
+    return choice(net.load.bus.values)
+
+def get_plant_size_mw():
+    # randomly get a powerinjection from a normal dristibuted set of values
+    return normal(loc=0.5, scale=0.05)
+
+def load_network():
+    # load the referens network 
+    return nw.mv_oberrhein(scenario="generation")
+
+def analyze_net_results(results:pd.DataFrame):
+    print(f'Analyze the capacity results.')
+    mean = results["installed"].mean()
+    quantile_25 = results["installed"].quantile(q=0.25)
+    quantile_75 = results["installed"].quantile(q=0.75)
+    print(f'The 25%-Quartile is {quantile_25:.2f} MW\nthe 50%-Quartile is {mean:.2f} MW\nthe 75%-Quartile is {quantile_75:.2f} MW')
+    return [quantile_25, mean, quantile_75]
+
+def get_net_capacity(net,iterations,results):
+    print(f'Starting the iteration process.\nAdditiona grid planing is considerd.')
+    for i in range(iterations):
+        print(f'Iteration {i+1} of {iterations} is in work.')
+        net_copy = copy.deepcopy(net)
+        installed_mw = 0
+        while 1:
+            violated, violation_type, violation_code = violations(net_copy)
+            if violated:
+                results.loc[i] = [installed_mw, violation_type]
+                break
+            else:
+                plant_size = get_plant_size_mw()
+                pp.create_sgen(net_copy, chose_bus(net_copy), p_mw=plant_size, q_mvar=0)
+                installed_mw += plant_size
+
+def grid_planing(net:pp.pandapowerNet,budget:float,costs:list[float],measures:list[str],violation_code:int):
+    while budget > 0.0:
+        # get the last installed generator, becuase it is the cause of the problem
+        prob_sgen = net.sgen.iloc[-1]
+        break
+    pass
+
+budget = 3.6e6 # 3,3 Mio. € stehen zur Verfügung
+PowerToGas_load = 0.05 # Load for a P2G-Plant in [MW]
+cost_P2G = 330_000.00
+cost_line_replacement = 55.00 # Cost per meter of line replacement
+
+net = load_network()
+iterations = 1
+results = pd.DataFrame(columns=["installed", "violation"])
+
+get_net_capacity(net=net, iterations=iterations, results=results)
+[q_25, q_50, q_75] = analyze_net_results(results=results)
+#%%
