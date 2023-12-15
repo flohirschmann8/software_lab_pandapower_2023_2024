@@ -40,66 +40,79 @@ def analyze_net_results(results:pd.DataFrame):
     print(f'The 25%-Quartile is {quantile_25:.2f} MW\nthe 50%-Quartile is {mean:.2f} MW\nthe 75%-Quartile is {quantile_75:.2f} MW')
     return [quantile_25, mean, quantile_75]
 
-def get_net_capacity(net:pp.pandapowerNet, iterations:int, results:pd.DataFrame, budget:float, cost_dict:dict):
+def get_net_capacity(net:pp.pandapowerNet, iterations:int, results:pd.DataFrame, budget:float, grid_measures_taken:pd.DataFrame,):
     print(f'Starting the iteration process.\nAdditiona grid planing is considerd.')
+    run = 0
+    grid_measure_id = 0
     
     for i in range(iterations):
         print(f'Iteration {i+1} of {iterations} is in work.')
+        grid_budget = budget
         net_copy = copy.deepcopy(net)
-        installed_mw = 0
+        installed_mw = 0        
         while 1:
+            run = run + 1
             violated, violation_type, violation_code = violations(net = net_copy,
                                                                   limit_line = loading_limit_lines,
                                                                   limit_trafo = loading_limit_trafo,
                                                                   limit_voltage = voltage_limit)
-            if violated:
-                results.loc[i] = [installed_mw, violation_type]
-                break
-            else:
+            if violated == False:
                 plant_size = get_plant_size_mw()
                 pp.create_sgen(net_copy, chose_bus(net_copy), p_mw=plant_size, q_mvar=0)
-                installed_mw += plant_size
+                installed_mw += plant_size                
+            elif violated == True and grid_budget > 0.0:
+                grid_measure_id = grid_measure_id + 1
+                grid_budget, grid_measure = fix_violations(net=net_copy, violation_code=violation_code, budget=grid_budget)
+                grid_measures_taken.loc[grid_measure_id] = [i+1, grid_measure] 
+            else:
+                results.loc[i] = [installed_mw, violation_type]
+                break
 
-def grid_planing(net:pp.pandapowerNet,budget:float,violation_code:int):
+def fix_violations(net:pp.pandapowerNet,violation_code:int,budget:float):
+    # check which violation occured and add a new P2G plant, or replace lines, return the remaining budget
     remaining_budget = budget
-    if violation_code == 1:
+    if violation_code == 1: # overloaded line
         overloaded_lines = net.line[net.res_line["loading_percent"] > loading_limit_lines]
         line_length_to_replace = overloaded_lines["length_km"].sum()
-        cost_of_replacing_lines = line_length_to_replace*cost_dict["Replace_Line"]
+        cost_of_replacing_lines = line_length_to_replace*cost_dict["Replace_Line"]*1000
+        
         # check which option is the better
-        if ( cost_of_replacing_lines > cost_dict["Cost_P2G"] )&( remaining_budget - max([cost_of_replacing_lines,cost_dict["Cost_P2G"]] > 0 )):
+        if ( cost_dict["Cost_P2G"] < cost_of_replacing_lines ) & ( remaining_budget - cost_dict["Cost_P2G"] >= 0.0 ):
             # it is cheaper to install a new P2G plant than to replace the overloaded lines
             remaining_budget = remaining_budget - cost_dict["Cost_P2G"]
             last_instaled_sgen = net.sgen.iloc[-1]# the problematic generator is the last one to be installed
             install_bus_p2g = last_instaled_sgen["bus"]
             pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
-            violated, type, code = violations(net = net,
-                                                limit_line = loading_limit_lines,
-                                                limit_trafo = loading_limit_trafo,
-                                                limit_voltage = voltage_limit)
-            if not violated:
-                return (True,net,remaining_budget,"A Power to Gas Plant solved the Problem.")# a way to fix the violation was found and the new network and remaining budget is returned
+            return(remaining_budget,"Added a new Power 2 Gas Plant.")
+        
+        elif remaining_budget - cost_of_replacing_lines >= 0.0:
+            remaining_budget = remaining_budget - cost_of_replacing_lines
+            if type(overloaded_lines) == pd.DataFrame: # check if more than one line is overloaded. If only on is overloaded a pandas Series is returned and not a Dataframe
+                for i in range(len(overloaded_lines)):
+                    line = overloaded_lines.iloc[i]
+                    line_id = line.name
+                    line_type = line["std_type"]
+                    line_length = line["length_km"]
+                    line_parallel = line["parallel"]                    
+                    pp.change_std_type(net=net,eid=line_id,element='line',name="NA2XS2Y 1x240 RM/25 12/20 kV")
             else:
-                soloution_found, new_network, left_budget, str_solution = grid_planing(net=net,budget=remaining_budget,violation_code=code)
-                if soloution_found:
-                    return (True, new_network, left_budget,str_solution)
-                
-        elif remaining_budget - cost_of_replacing_lines > 0:           
-            for i in range(len(overloaded_lines)):
-                line = overloaded_lines.iloc[i]
-                line_type = line["std_type"]
-                line_length = line["length_km"]
-                line_parallel = line["parallel"]
-                cost_to_replace_line = line_length*line_parallel*cost_dict["Replace_Line"]
-                pp.change_std_type()
+                line_id = overloaded_lines.index
+                pp.change_std_type(net=net,eid=line_id,element='line',name="NA2XS2Y 1x240 RM/25 12/20 kV")
+            return (remaining_budget,"Added a new Line.")
         
         else:
-            return (False,net,0.0,"The Budged is used up!")
-    elif violation_code == 2:
-        pass
-    elif violation_code == 3:
-        pass
+            return (0.0,"The Budget is empty.")
     
+    if violation_code == 2 or violation_code == 3: # overloaded transformer or voltage violation
+        if remaining_budget - cost_dict["Cost_P2G"] >= 0.0:
+            # it is cheaper to install a new P2G plant than to replace the overloaded lines
+            remaining_budget = remaining_budget - cost_dict["Cost_P2G"]
+            last_instaled_sgen = net.sgen.iloc[-1]# the problematic generator is the last one to be installed
+            install_bus_p2g = last_instaled_sgen["bus"]
+            pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
+            return(remaining_budget,"Added a new Power 2 Gas Plant.")
+        else:
+            return (0.0,"The Budget is empty.")
 
 budget = 3.6e6 # 3,3 Mio. € stehen zur Verfügung
 cost_dict = {"Load_P2G": 0.05,
@@ -122,10 +135,13 @@ loading_limit_lines = 95.0
 loading_limit_trafo = 100.0
 voltage_limit = 1.05
 
-net = load_network()
-iterations = 1
-results = pd.DataFrame(columns=["installed", "violation"])
+max_it_depth = 1_000
 
-get_net_capacity(net=net, iterations=iterations, results=results, budget=budget, cost_dict=cost_dict)
+net = load_network()
+iterations = 100
+results = pd.DataFrame(columns=["installed", "violation"])
+grid_measures = pd.DataFrame(columns=["Main_itteration","Measurenment"])
+
+get_net_capacity(net=net, iterations=iterations, results=results, budget=budget, grid_measures_taken=grid_measures)
 [q_25, q_50, q_75] = analyze_net_results(results=results)
 #%%

@@ -78,24 +78,3 @@ budget = 3.6e6 # 3,3 Mio. € stehen zur Verfügung
 PowerToGas_load = 0.05 # Load for a P2G-Plant in [MW]
 cost_P2G = 330_000.00
 cost_line_replacement = 55.00 # Cost per meter of line replacement
-
-def get_opt_net_capacity(net,iterations,results):
-    print(f'Starting the iteration process.\nAdditiona grid planing is considerd.')
-    for i in range(iterations):
-        print(f'Iteration {i+1} of {iterations} is in work.')
-        net_copy = copy.deepcopy(net)
-        installed_mw = 0
-        while 1:
-            violated, violation_type = violations(net_copy)
-            if violated:
-                results.loc[i] = [installed_mw, violation_type]
-                break
-            else:
-                plant_size = get_plant_size_mw()
-                pp.create_sgen(net_copy, chose_bus(net_copy), p_mw=plant_size, q_mvar=0)
-                installed_mw += plant_size
-
-def grid_planing(net:pp.pandapowerNet,budget:float,costs:list[float],measures:list[str],violation_type:str):
-    while budget > 0.0:
-        overloaded_lines = net.line[net.res_line["loading_percent"]]
-    pass
