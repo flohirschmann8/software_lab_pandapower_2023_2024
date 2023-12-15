@@ -60,18 +60,41 @@ def get_net_capacity(net:pp.pandapowerNet, iterations:int, results:pd.DataFrame,
                 pp.create_sgen(net_copy, chose_bus(net_copy), p_mw=plant_size, q_mvar=0)
                 installed_mw += plant_size
 
-def grid_planing(net:pp.pandapowerNet,budget:float,violation_code:int, limit_line:float, limit_trafo:float, limit_voltage:float):
+def grid_planing(net:pp.pandapowerNet,budget:float,violation_code:int):
     remaining_budget = budget
     if violation_code == 1:
-        overloaded_lines = net.line[net.res_line["loading_percent"] > limit_line]
-        for i in range(len(overloaded_lines)):
-            line = overloaded_lines.iloc[i]
-            line_type = line["std_type"]
-            line_length = line["length_km"]
-            line_parallel = line["parallel"]
-            if ( line_length*line_parallel*cost_dict["Replace_Line"] - remaining_budget ) > 0.0:
+        overloaded_lines = net.line[net.res_line["loading_percent"] > loading_limit_lines]
+        line_length_to_replace = overloaded_lines["length_km"].sum()
+        cost_of_replacing_lines = line_length_to_replace*cost_dict["Replace_Line"]
+        # check which option is the better
+        if ( cost_of_replacing_lines > cost_dict["Cost_P2G"] )&( remaining_budget - max([cost_of_replacing_lines,cost_dict["Cost_P2G"]] > 0 )):
+            # it is cheaper to install a new P2G plant than to replace the overloaded lines
+            remaining_budget = remaining_budget - cost_dict["Cost_P2G"]
+            last_instaled_sgen = net.sgen.iloc[-1]# the problematic generator is the last one to be installed
+            install_bus_p2g = last_instaled_sgen["bus"]
+            pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
+            violated, type, code = violations(net = net,
+                                                limit_line = loading_limit_lines,
+                                                limit_trafo = loading_limit_trafo,
+                                                limit_voltage = voltage_limit)
+            if not violated:
+                return (True,net,remaining_budget,"A Power to Gas Plant solved the Problem.")# a way to fix the violation was found and the new network and remaining budget is returned
+            else:
+                soloution_found, new_network, left_budget, str_solution = grid_planing(net=net,budget=remaining_budget,violation_code=code)
+                if soloution_found:
+                    return (True, new_network, left_budget,str_solution)
+                
+        elif remaining_budget - cost_of_replacing_lines > 0:           
+            for i in range(len(overloaded_lines)):
+                line = overloaded_lines.iloc[i]
+                line_type = line["std_type"]
+                line_length = line["length_km"]
+                line_parallel = line["parallel"]
+                cost_to_replace_line = line_length*line_parallel*cost_dict["Replace_Line"]
                 pp.change_std_type()
-        pass
+        
+        else:
+            return (False,net,0.0,"The Budged is used up!")
     elif violation_code == 2:
         pass
     elif violation_code == 3:
@@ -100,7 +123,7 @@ loading_limit_trafo = 100.0
 voltage_limit = 1.05
 
 net = load_network()
-iterations = 10
+iterations = 1
 results = pd.DataFrame(columns=["installed", "violation"])
 
 get_net_capacity(net=net, iterations=iterations, results=results, budget=budget, cost_dict=cost_dict)
