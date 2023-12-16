@@ -2,6 +2,9 @@ import pandas as pd
 import pandapower as pp
 import copy
 import pandapower.networks as nw
+import seaborn as sns
+sns.set_theme()
+import matplotlib.pyplot as plt
 from numpy.random import choice # random choice out of an list
 from numpy.random import normal # normal distribution function
 #%%
@@ -13,11 +16,11 @@ def violations(net):
     # run the power flow and check for vioations
     pp.runpp(net)
     if net.res_line.loading_percent.max() > 95:
-        return (True, "Line \n Overloading")
+        return (True, "Line Overloading")
     elif net.res_trafo.loading_percent.max() > 100:
-        return (True, "Transformer \n Overloading")
-    elif net.res_bus.vm_pu.max() > 1.06:
-        return (True, "Voltage \n Violation")
+        return (True, "Transformer Overloading")
+    elif net.res_bus.vm_pu.max() > 1.05:
+        return (True, "Voltage Violation")
     else:
         return (False, None)
     
@@ -70,11 +73,16 @@ get_net_capacity(net=net, iterations=iterations, results=results)
 
 ############# Task 3
 
-#%%
+#%% plot the results
+num_violations_1 = len(results[results["violation"] == "Line Overloading"])
+num_violations_2 = len(results[results["violation"] == "Transformer Overloading"])
+num_violations_3 = len(results[results["violation"] == "Voltage Violation"])
 
-# new fuction to determain the grid capacity with additional planung measures
-
-budget = 3.6e6 # 3,3 Mio. € stehen zur Verfügung
-PowerToGas_load = 0.05 # Load for a P2G-Plant in [MW]
-cost_P2G = 330_000.00
-cost_line_replacement = 55.00 # Cost per meter of line replacement
+fig, axs = plt.subplots(nrows=1,ncols=2,figsize=(24,10))
+fig.suptitle("Capacity analysis without violation mitigation")
+axs[0].pie([num_violations_1,num_violations_2,num_violations_3],labels=["Line Overloading","Transformer Overloading","Voltage Violation"],autopct='%1.1f%%')
+axs[0].set_title("Distribution of violations",size=15)
+sns.boxplot(ax=axs[1],data=results,y="installed")
+axs[1].set(ylabel="Installed Power [MW]")
+axs[1].set_title("Distribution of installed Power",size=15)
+# %%

@@ -2,6 +2,9 @@ import pandas as pd
 import pandapower as pp
 import copy
 import pandapower.networks as nw
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme()
 from numpy.random import choice # random choice out of an list
 from numpy.random import normal # normal distribution function
 #%%
@@ -10,13 +13,13 @@ def violations(net:pp.pandapowerNet, limit_line:float, limit_trafo:float, limit_
     pp.runpp(net)
     if net.res_line.loading_percent.max() > limit_line:
         #print(["Line overload",net.line[net.res_line.loading_percent > loading_limit_lines].index])
-        return (True, "Line \n Overloading", 1)
+        return (True, "Line Overloading", 1)
     elif net.res_trafo.loading_percent.max() > limit_trafo:
         #print("Trafo overload")
-        return (True, "Transformer \n Overloading", 2)
+        return (True, "Transformer Overloading", 2)
     elif net.res_bus.vm_pu.max() > limit_voltage:
         #print(["Voltage violation",net.bus[net.res_bus.vm_pu > voltage_limit].index])
-        return (True, "Voltage \n Violation", 3)
+        return (True, "Voltage Violation", 3)
     else:
         return (False, None, 0)
     
@@ -49,7 +52,7 @@ def get_net_capacity(net:pp.pandapowerNet, iterations:int, results:pd.DataFrame,
         print(f'Iteration {i+1} of {iterations} is in work.')
         grid_budget = budget
         net_copy = copy.deepcopy(net)
-        installed_mw = 0        
+        installed_mw = 0    
         while 1:
             run = run + 1
             violated, violation_type, violation_code = violations(net = net_copy,
@@ -82,7 +85,8 @@ def fix_violations(net:pp.pandapowerNet,violation_code:int,budget:float):
             remaining_budget = remaining_budget - cost_dict["Cost_P2G"]
             last_instaled_sgen = net.sgen.iloc[-1]# the problematic generator is the last one to be installed
             install_bus_p2g = last_instaled_sgen["bus"]
-            pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
+            new_p2g = pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
+            installed_mw_grid["installed p2g"] += cost_dict["Load_P2G"]
             return(remaining_budget,"Added a new Power 2 Gas Plant.")
         
         elif remaining_budget - cost_of_replacing_lines >= 0.0:
@@ -109,13 +113,14 @@ def fix_violations(net:pp.pandapowerNet,violation_code:int,budget:float):
             remaining_budget = remaining_budget - cost_dict["Cost_P2G"]
             last_instaled_sgen = net.sgen.iloc[-1]# the problematic generator is the last one to be installed
             install_bus_p2g = last_instaled_sgen["bus"]
-            pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
+            new_p2g = pp.create_load(net=net,bus=install_bus_p2g, p_mw=cost_dict["Load_P2G"],name="Power 2 Gas Station")
+            installed_mw_grid["installed p2g"] += cost_dict["Load_P2G"]
             return(remaining_budget,"Added a new Power 2 Gas Plant.")
         else:
             return (0.0,"The Budget is empty.")
 
-budget = 3.6e6 # 3,3 Mio. € stehen zur Verfügung
-cost_dict = {"Load_P2G": 0.05,
+budget = 3.3e6 # 3,3 Mio. € stehen zur Verfügung
+cost_dict = {"Load_P2G": 0.15,
              "Cost_P2G": 330_000.00,
              "Replace_Line": 55.00
              }
@@ -135,6 +140,9 @@ loading_limit_lines = 95.0
 loading_limit_trafo = 100.0
 voltage_limit = 1.05
 
+installed_mw_grid = {"installed pv": 0.0,
+                    "installed p2g": 0.0}
+
 max_it_depth = 1_000
 
 net = load_network()
@@ -144,4 +152,18 @@ grid_measures = pd.DataFrame(columns=["Main_itteration","Measurenment"])
 
 get_net_capacity(net=net, iterations=iterations, results=results, budget=budget, grid_measures_taken=grid_measures)
 [q_25, q_50, q_75] = analyze_net_results(results=results)
+
+#%% plot the results
+num_violations_1 = len(results[results["violation"] == "Line Overloading"])
+num_violations_2 = len(results[results["violation"] == "Transformer Overloading"])
+num_violations_3 = len(results[results["violation"] == "Voltage Violation"])
+
 #%%
+fig, axs = plt.subplots(nrows=1,ncols=2,figsize=(24,10))
+fig.suptitle("Capacity analysis with violation mitigation")
+axs[0].pie([num_violations_1,num_violations_2,num_violations_3],labels=["Line Overloading","Transformer Overloading","Voltage Violation"],autopct='%1.1f%%')
+axs[0].set_title("Distribution of violations",size=15)
+sns.boxplot(ax=axs[1],data=results,y="installed")
+axs[1].set(ylabel="Installed Power [MW]")
+axs[1].set_title("Distribution of installed Power",size=15)
+# %%
