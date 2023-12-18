@@ -136,8 +136,8 @@ availible_ground_line_types = {"NA2XS2Y 1x95 RM/25 12/20 kV": 0.252,
                                "NA2XS2Y 1x240 RM/25 12/20 kV": 0.421
                                }
 
-loading_limit_lines = 95.0
-loading_limit_trafo = 100.0
+loading_limit_lines = 50.0
+loading_limit_trafo = 50.0
 voltage_limit = 1.05
 
 installed_mw_grid = {"installed pv": 0.0,
@@ -166,4 +166,5 @@ axs[0].set_title("Distribution of violations",size=15)
 sns.boxplot(ax=axs[1],data=results,y="installed")
 axs[1].set(ylabel="Installed Power [MW]")
 axs[1].set_title("Distribution of installed Power",size=15)
+plt.show()
 # %%

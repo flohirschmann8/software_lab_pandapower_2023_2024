@@ -15,9 +15,9 @@ from numpy.random import normal # normal distribution function
 def violations(net):
     # run the power flow and check for vioations
     pp.runpp(net)
-    if net.res_line.loading_percent.max() > 95:
+    if net.res_line.loading_percent.max() > 50:
         return (True, "Line Overloading")
-    elif net.res_trafo.loading_percent.max() > 100:
+    elif net.res_trafo.loading_percent.max() > 50:
         return (True, "Transformer Overloading")
     elif net.res_bus.vm_pu.max() > 1.05:
         return (True, "Voltage Violation")
@@ -85,4 +85,5 @@ axs[0].set_title("Distribution of violations",size=15)
 sns.boxplot(ax=axs[1],data=results,y="installed")
 axs[1].set(ylabel="Installed Power [MW]")
 axs[1].set_title("Distribution of installed Power",size=15)
+plt.show()
 # %%
