@@ -1,4 +1,6 @@
 ### new exercise 2
+import matplotlib.pyplot as plt
+
 import pandapower as pp
 import pandapower.networks as nw
 import pandapower.plotting as plot
@@ -8,7 +10,7 @@ import pandapower.plotting as plot
 # load the network
 net = nw.mv_oberrhein(scenario="generation")
 
-plot.simple_plot(net)
+# plot.simple_plot(net)
 
 ##### task2 #########
 ##### line loading color map
@@ -24,7 +26,7 @@ def plotting_lc_bc(net):
     cmap, norm = plot.cmap_continuous(cmap_list)
 
     lc = plot.create_line_collection(net, net.line.index, zorder=1, cmap=cmap, norm=norm, linewidths=2)
-    plot.draw_collections(collections= [lc], figsize=(12,8))
+    # plot.draw_collections(collections= [lc], figsize=(12,8))
 
     ##### adding bus voltage color map
 
@@ -33,6 +35,7 @@ def plotting_lc_bc(net):
 
     bc = plot.create_bus_collection(net, net.bus.index, size=80, zorder=2, cmap=cmap, norm=norm)
     plot.draw_collections(collections=[lc, bc], figsize=(12, 8))
+    plt.show()
 
 
 
