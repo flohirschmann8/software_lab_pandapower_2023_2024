@@ -32,8 +32,11 @@ my_area = 2 # i choose the area 3 to be mine for this exercise and because the i
 
 net_graph = top.create_nxgraph(net=whole_grid)
 
+# to get a pandas dataframe as a return value the int my_area has to be passed as a list to the .loc function
 my_ext_grid = whole_grid.ext_grid.loc[[my_area],:]
 
+# to extract the int value of the bus to start the grid search it is nessesary to extract the values of the pandas dataframe and 
+# out of the array of vaules the first value is the int index of the bus that the external grid is connected to
 grid_search_starting_bus = my_ext_grid["bus"].values[0]
 my_busses_indices = list(top.connected_component(mg=net_graph,bus=grid_search_starting_bus))
 my_busses = whole_grid.bus.loc[my_busses_indices,:]
@@ -97,7 +100,7 @@ coords_information_text = {'x':referenc_coords.x+5_000,
 
 # i want to add the important information about my area of the grid to the plot of it.
 # in the next lines i create a multiple row f-String to contain all information i want to relate about my grid area
-info_text_my_area = f'''Grid information:\n
+info_text_my_area = f'''Information about my subgrid:\n
 Number of nodes = {number_of_nodes_in_my_area}\n
 Number of lines = {number_of_lines_in_my_area}, total length = {line_length_in_my_area:.2f} km\n
 Number of loads = {number_of_loads_in_my_area}, installed power = {installed_load_power:.2f} MW\n
@@ -126,7 +129,7 @@ ConstControl(net=whole_grid, element='sgen', variable='scaling', element_index=m
 
 
 # create the output path
-output_folder = "time_series_results"
+output_folder = "Task_2_subgrid_results"
 output_path = os.path.join(os.getcwd(),output_folder)
 if not os.path.exists(output_path):
     os.mkdir(output_path)
@@ -151,16 +154,16 @@ df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_perce
 # plot of the voltage results
 # in the next line i create a figure with 2 subplots to show the voltage and line loading in one image
 fig, axs = plt.subplots(nrows=1,ncols=2,figsize=(15,8))
-fig.suptitle("Resutls from the time series calculation in task 2",size=18)
+fig.suptitle("Results from the time series calculation in task 2\nfor my subgrid without the controller working",size=18)
 axs[0].plot(df_res_bus.index,df_res_bus["max. voltage"],label="max. voltage")
 axs[0].plot(df_res_bus.index,df_res_bus["min. voltage"],label="min. voltage")
-axs[0].hlines(y=1.05, xmin=0, xmax=len(df_res_bus.index),linestyles="dashed",label="bounds",color="red")
+axs[0].hlines(y=1.05, xmin=0, xmax=len(df_res_bus.index),linestyles="dashed",label="limits",color="red")
 axs[0].hlines(y=0.95, xmin=0, xmax=len(df_res_bus.index),linestyles="dashed",color="red")
 axs[0].set(xlabel="Time Step",ylabel="voltage [p.u.]")
 axs[0].legend()
 
 axs[1].plot(df_res_line.index,df_res_line["max. line loading"],label="max. line loading")
-axs[1].hlines(y=100.0, xmin=0, xmax=len(df_res_line.index),linestyles="dashed",label="bounds",color="red")
-axs[1].set(xlabel="Time Step",ylabel="voltage [p.u.]")
+axs[1].hlines(y=100.0, xmin=0, xmax=len(df_res_line.index),linestyles="dashed",label="limit",color="red")
+axs[1].set(xlabel="Time Step",ylabel="line loading [%]")
 axs[1].legend()
-plt.savefig("Tast_2_reslts.png")
+plt.savefig("Task_2_subgrid_results.png")
