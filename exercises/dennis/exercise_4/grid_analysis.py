@@ -15,7 +15,7 @@ from matplotlib import pyplot as plt
 # to make the plots pretty i use the seaborn module to set a good theme
 import seaborn as sns 
 sns.set_theme()
-
+#%%
 ##########################################
 ######## import the grid #################
 ##########################################
@@ -76,7 +76,7 @@ size_ext_grid = 80
 all_bus_collection = plot.create_bus_collection(net=whole_grid, buses=whole_grid.bus.index, color=color_fundamental_grid, size=size_nodes)
 all_line_collection = plot.create_line_collection(net=whole_grid, lines=whole_grid.line.index, color=color_fundamental_grid, use_bus_geodata=True)
 all_trafo_collection = plot.create_trafo_collection(net=whole_grid, trafos=whole_grid.trafo.index, color=color_fundamental_grid, size=size_trafo)
-all_ext_grid_collection = plot.create_ext_grid_collection(net=whole_grid, ext_grids=whole_grid.ext_grid.index, color=color_fundamental_grid, size=size_ext_grid)
+all_ext_grid_collection = plot.create_ext_grid_collection(net=whole_grid, ext_grids=whole_grid.ext_grid.index, color=color_fundamental_grid, size=size_ext_grid,edgecolor=color_fundamental_grid)
 
 collection_whole_grid = [all_bus_collection, all_line_collection,all_trafo_collection, all_ext_grid_collection]
 
@@ -85,7 +85,7 @@ collection_whole_grid = [all_bus_collection, all_line_collection,all_trafo_colle
 my_bus_collection = plot.create_bus_collection(net=whole_grid, buses=my_busses_indices, color=color_my_grid, size=size_nodes)
 my_line_collection = plot.create_line_collection(net=whole_grid, lines=my_lines_indices, color=color_my_grid, use_bus_geodata=True)
 my_trafo_collection = plot.create_trafo_collection(net=whole_grid, trafos=my_trafo_indices, color=color_my_grid, size=size_trafo)
-my_ext_grid_collection = plot.create_ext_grid_collection(net=whole_grid, ext_grids=my_ext_grid.index, color=color_my_grid, size=size_ext_grid)
+my_ext_grid_collection = plot.create_ext_grid_collection(net=whole_grid, ext_grids=my_ext_grid.index, color=color_my_grid, size=size_ext_grid,edgecolor=color_my_grid)
 
 collection_my_grid = [my_bus_collection, my_line_collection, my_trafo_collection, my_ext_grid_collection]
 
@@ -114,7 +114,7 @@ plt.savefig(fname="Task_1_colored_grid.png")
 ##########################################
 ############# Task I.2 ###################
 ##########################################
-
+#%%
 # load the time series data and create the data source object
 ts_profiles = pd.read_csv(filepath_or_buffer="timeseries_exercise_4.csv",sep=';',index_col=0)
 number_of_time_steps = len(ts_profiles["loads"])
