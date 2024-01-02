@@ -5,22 +5,21 @@ import tempfile
 import pandapower as pp
 import pandapower.topology as top
 from pandapower.control import ConstControl
-from exercises.lukas.excercise4 import tap_control
 from pandapower.timeseries import DFData
 from pandapower.timeseries import OutputWriter
 from pandapower.timeseries.run_time_series import run_timeseries
+from exercises.lukas.excercise4.tap_control import TapController
 import matplotlib.pyplot as plt
 
 data = pd.read_csv("/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/timeseries_exercise_4.csv", sep=";")
 ds = DFData(data)
-
 def timeseries_area2(output_dir):
     net = simple_test_net()
     n_timesteps = len(data.sgens)
     ds = create_data_source(n_timesteps)
     net = create_controllers(net, ds)
     time_steps = range(0, n_timesteps)
-    tap_control(net, tid=1, data_source=ds)
+    tap_ctrl = TapController(net, tid=tid, data_source=ds, p_profile="1")
     create_output_writer(net, time_steps, output_dir)
     run_timeseries(net, time_steps)
 
@@ -30,10 +29,14 @@ def simple_test_net():
     mg = top.create_nxgraph(net)
     # Zählt alle Knoten auf, die mit Bus 0, 45, 89 und 134 verbunden sind
     global buses_area2
+    global tid
     buses_area1 = list(top.connected_component(mg, bus=0))
     buses_area2 = list(top.connected_component(mg, bus=45))
     buses_area3 = list(top.connected_component(mg, bus=89))
     buses_area4 = list(top.connected_component(mg, bus=134))
+    for i in net.trafo.hv_bus.isin(buses_area2).index:
+        if net.trafo.hv_bus.isin(buses_area2).loc[i]:
+            tid = i
     return net
 
 def create_data_source(n_timesteps):
@@ -63,10 +66,14 @@ def create_output_writer(net, time_steps, output_dir):
     hv_bus = mask_buses_area2_hv.loc[mask_buses_area2_hv["vn_kv"] == 110.0, "vn_kv"].index
     mask_buses_area2 = mask_buses_area2_hv.drop(hv_bus).index
     mask_lines_area2 = net.line[(net.line.from_bus.isin(buses_area2))&net.line.to_bus.isin(buses_area2)].index
+    tap_pos_trafo_area2 = net.trafo.hv_bus.isin(buses_area2).index
+    res_ext_grid2 = net.ext_grid.bus.isin(buses_area2).index
     #Ergebnisse in Excel schreiben
     ow.log_variable("res_line", "loading_percent", index=mask_lines_area2, eval_function=np.max, eval_name="Max. Leitungsauslastung")
     ow.log_variable("res_bus", "vm_pu", index=mask_buses_area2, eval_function=np.max, eval_name="Max. Spannungspegel")
     ow.log_variable("res_bus", "vm_pu", index=mask_buses_area2, eval_function=np.min, eval_name="Min. Spannungspegel")
+    ow.log_variable("trafo", "tap_pos", index=tap_pos_trafo_area2)
+    ow.log_variable("res_ext_grid", "p_mw", index=res_ext_grid2)
     return ow
 
 output_dir = os.path.join(tempfile.gettempdir(), "time_series_area2")
@@ -99,7 +106,3 @@ plt.grid()
 plt.show()"""
 overloading = line_loading.loc[line_loading["Max. Leitungsauslastung"]>100, "Max. Leitungsauslastung"]
 #print(f"In", len(overloading), "Zeitschritten gibt es Verletzungen des oberen Spannungsbandes. Das entspricht" ,round(100*len(overloading)/len(line_loading),2), "% der gesamten Zeit.")
-
-
-
-
