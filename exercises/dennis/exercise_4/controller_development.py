@@ -19,7 +19,7 @@ sns.set_theme()
 
 # if this variable is set to True, then all nodes of the whole grid are selected and logged 
 # if this variable is set to False, then only the nodes of my subgrid are selected and logged 
-log_whole_grid = True
+log_whole_grid = False
 
 class MyGrid():
     """
@@ -161,10 +161,10 @@ class W_Controller(Controller):
     def control_step(self, net):
         if self.element == "line_loading":
             self.control_line_loading(net)
-            #self.simple_solution(net)
+            
         elif self.element == "voltage":
             self.control_bus_voltage(net)
-            #self.simple_solution(net)
+
 
     def check_line_loading(self,net):
         current_max_line_loading = net.res_line.loc[self.subgrid.get_indices("line"),"loading_percent"].max()
@@ -216,8 +216,6 @@ class W_Controller(Controller):
                 net.trafo.loc[self.subgrid.get_indices("trafo"),"tap_pos"] += 1
         else:
             self.control_line_loading(net)
-            #net.sgen.loc[self.subgrid.get_indices("sgen"),"scaling"] *= 0.9
-            #net.load.loc[self.subgrid.get_indices("load"),"scaling"] *= 0.9
 
     def determain_pq_case(self,net):
 
@@ -241,10 +239,6 @@ class W_Controller(Controller):
             else:
                 # negative reactive power points to capacitiv problem
                 self.pq_case = "q-"
-
-    def simple_solution(self,net):
-        net.load.loc[self.subgrid.get_indices("load"),"scaling"] *= 0.9
-        net.sgen.loc[self.subgrid.get_indices("sgen"),"scaling"] *= 0.9
 
 grid = pp.from_json(filename="net_exercise_4.json")
 
@@ -322,7 +316,7 @@ ow.log_variable(table="res_line", variable="loading_percent", index=line_indices
 
 run_timeseries(net=grid)
 
-# %% read in the results from the time series calculation
+# read in the results from the time series calculation
 
 df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus\\vm_pu.xlsx"),index_col=0)
 df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_percent.xlsx"),index_col=0)
