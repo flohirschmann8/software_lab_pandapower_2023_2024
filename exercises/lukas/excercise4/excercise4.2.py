@@ -11,8 +11,6 @@ from pandapower.timeseries.run_time_series import run_timeseries
 import matplotlib.pyplot as plt
 
 data = pd.read_csv("/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/timeseries_exercise_4.csv", sep=";")
-ds = DFData(data)
-#
 def timeseries_area2(output_dir):
     net = simple_test_net()
     n_timesteps = len(data.sgens)
@@ -56,7 +54,7 @@ def create_controllers(net, ds):
 
 def create_output_writer(net, time_steps, output_dir):
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
-    """Da hv_bus einen konstanten Spannungspegel von 1.00 hat, muss dieser ausgeschlossen werden. Dazu wird der Index des HV-Buses gesucht und mit .drop ausgeschossen"""
+    #Da hv_bus einen konstanten Spannungspegel von 1.00 hat, muss dieser ausgeschlossen werden. Dazu wird der Index des HV-Buses gesucht und mit .drop ausgeschossen
     mask_buses_area2_hv = net.bus.loc[buses_area2]
     hv_bus = mask_buses_area2_hv.loc[mask_buses_area2_hv["vn_kv"] == 110.0, "vn_kv"].index
     mask_buses_area2 = mask_buses_area2_hv.drop(hv_bus).index
@@ -81,6 +79,8 @@ vm_pu.plot()
 plt.xlabel("Zeitschritt")
 plt.ylabel("Spannungspegel [p.u]")
 plt.title("Spannungspegel")
+plt.axhline(y=0.95, color="r", linestyle="--", label="Grenze Unterspannung (0.95 p.u)")
+plt.axhline(y=1.05, color="r", linestyle="--", label="Grenze Überspannung (1.05 p.u)")
 plt.grid()
 plt.show()
 low_voltage = vm_pu.loc[vm_pu["Min. Spannungspegel"]<0.95, "Min. Spannungspegel"]
@@ -94,6 +94,7 @@ line_loading.plot(label="Leitungsauslastung")
 plt.xlabel("Zeitschritt")
 plt.ylabel("Leitungsauslastung [%]")
 plt.title("Leitungsauslastung")
+plt.axhline(y=100, color="r", linestyle="--", label="Grenze Leitungsauslastung (100 %)")
 plt.grid()
 plt.show()
 overloading = line_loading.loc[line_loading["Max. Leitungsauslastung"]>100, "Max. Leitungsauslastung"]

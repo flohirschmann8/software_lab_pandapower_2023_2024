@@ -3,11 +3,11 @@ import pandapower.topology as top
 import pandapower.plotting as plot
 import matplotlib.pyplot as plt
 
+#Import the customized MV Oberrhein network
 net = pp.from_json("/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/net_exercise_4.json")
-
 mg = top.create_nxgraph(net)
 
-#Zählt alle Knoten auf, die mit Bus 0, 45, 89 und 134 verbunden sind
+#Count all nodes connected to buses 0, 45, 89, and 134
 buses_area1 = list(top.connected_component(mg, bus=0))
 buses_area2 = list(top.connected_component(mg, bus=45))
 buses_area3 = list(top.connected_component(mg, bus=89))
