@@ -102,7 +102,7 @@ legend_handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='b
 
 
 
-plt.legend(legend_handles, legend_labels, loc='upper right')
+plt.legend(legend_handles, legend_labels, loc='lower right',fontsize=15)
 
 
 plt.show()
