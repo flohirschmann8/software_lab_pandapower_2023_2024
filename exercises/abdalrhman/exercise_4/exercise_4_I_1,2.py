@@ -1,12 +1,21 @@
 
-
-import pandapower as pp
-
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 import pandapower.topology as top
 import pandapower.plotting as plot
 import matplotlib.pyplot as plt
+
+import os
+
+import tempfile
+import pandapower as pp
+from pandapower.control import ConstControl
+from pandapower.timeseries import DFData
+from pandapower.timeseries import OutputWriter
+from pandapower.timeseries.run_time_series import run_timeseries
+
+
 ### first we import the grid
 
 # net = pp.from_json(r"C:\Users\alfak\OneDrive\Desktop\GitHubProjects\software_lab_pandapower_2023_2024\exercises\abdalrhman\exercise_4\net_exercise_4.json")
@@ -28,8 +37,9 @@ buses_area4 = list(top.connected_component(mg, bus=134))
 
 ####### I am choosing the area 4 to be my case study
 
+### grid analysis TASK I,1 ####
 
-### grid assets description of Area 4
+## grid assets description of Area 4
 
 ## indeces and number of the bueses
 idx_buses = buses_area4
@@ -61,9 +71,6 @@ n_of_trafos = len(idx_trafos)
 
 idx_ext_grids = net.ext_grid.index[net.ext_grid.bus.isin(idx_buses)]
 n_of_ext_grids = len(idx_ext_grids)
-
-
-### TODO: reminder to summurize the grid description in word
 
 ###### grid sketches #######
 
@@ -109,5 +116,78 @@ plt.show()
 
 # plt.savefig(r".\exercises\abdalrhman\exercise_4\net_exercise_4_I_1.png")
 
-## TODO: put the sketch on word
+
+
+#### Grid analysis Task I,2 ################################################################
+#### conducting timeseries ####
+
+
+# import the grid model
+net = pp.from_json(r".\exercises\abdalrhman\exercise_4\net_exercise_4.json")
+
+
+## import the profiles
+
+profiles = pd.read_csv(r".\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
+
+## converts the Dataframe to the required format for the controllers
+
+ds = DFData(profiles)
+
+## create the const controllers
+
+for i in idx_loads:
+    ConstControl(net, element='load', variable='p_mw', element_index= i,
+                 data_source=ds, profile_name=["loads"])
+for i in idx_sgens:
+    ConstControl(net, element='sgen', variable='p_mw', element_index=i,
+                 data_source=ds, profile_name=["sgens"])
+
+### define the output writer
+
+output_dir = r".\exercises\abdalrhman\exercise_4"
+
+ow = OutputWriter(net,
+                  time_steps= len(profiles),
+                  output_path=output_dir,
+                  output_file_type=".csv",
+                  log_variables=list())
+
+### extract the line loadings of all lines at grid area 4 at all time steps
+
+ow.log_variable('res_line', 'loading_percent', index=idx_lines)
+
+### extract the maximum line loadings of all lines at grid area 4
+
+ow.log_variable('res_line', 'loading_percent', index=idx_lines, eval_function=np.max, eval_name="maximum line loading")
+
+### extract the bus voltages of all buses at grid area 4 at all time steps
+
+ow.log_variable('res_bus', 'vm_pu', index=idx_buses)
+
+### extract the maximum bus voltages of all buses at grid area 4
+
+ow.log_variable('res_bus', 'vm_pu', index=idx_buses, eval_function=np.max, eval_name="maximum bus voltage")
+
+### extract the minimum bus voltages of all buses at grid area 4
+
+ow.log_variable('res_bus', 'vm_pu', index=idx_buses, eval_function=np.min, eval_name="minimum bus voltage")
+
+run_timeseries(net, len(profiles))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
