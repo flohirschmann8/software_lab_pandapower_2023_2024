@@ -4,11 +4,12 @@ import pandas as pd
 
 import pandapower.topology as top
 import pandapower.plotting as plot
+
 import matplotlib.pyplot as plt
+# %matplotlib inline
 
 import os
 
-import tempfile
 import pandapower as pp
 from pandapower.control import ConstControl
 from pandapower.timeseries import DFData
@@ -136,12 +137,12 @@ ds = DFData(profiles)
 
 ## create the const controllers
 
-for i in idx_loads:
-    ConstControl(net, element='load', variable='p_mw', element_index= i,
-                 data_source=ds, profile_name=["loads"])
-for i in idx_sgens:
-    ConstControl(net, element='sgen', variable='p_mw', element_index=i,
-                 data_source=ds, profile_name=["sgens"])
+
+ConstControl(net, element='load', variable='scaling', element_index= idx_loads,
+             data_source=ds, profile_name="loads")
+
+ConstControl(net, element='sgen', variable='scaling', element_index= idx_sgens,
+             data_source=ds, profile_name="sgens")
 
 ### define the output writer
 
@@ -176,16 +177,58 @@ ow.log_variable('res_bus', 'vm_pu', index=idx_buses, eval_function=np.min, eval_
 run_timeseries(net, len(profiles))
 
 
+### plotting the results
+
+## import the line loadings and bus voltages results
+
+line_loadings = pd.read_csv(r".\exercises\abdalrhman\exercise_4\res_line\loading_percent.csv", sep=';', index_col='Unnamed: 0')
+bus_voltages = pd.read_csv(r".\exercises\abdalrhman\exercise_4\res_bus\vm_pu.csv", sep=';', index_col='Unnamed: 0')
+
+# line loading results
+
+### note that this is the maximum line loading at every time step, so it does not have to be the same
+### line that has the maximum loading at every time step
 
 
+## bus voltages results
+## maximum bus voltage
+
+def grid_limit_violation_plt():
+    # Create a figure with two subplots (1 row, 2 columns)
+    fig, axs = plt.subplots(3, 1, figsize=(12, 18))
+
+    # Plot the first subplot (maximum bus voltage)
+
+    line_loadings["maximum line loading"].plot(ax=axs[0])
+    axs[0].axhline(y=100, color='r', linestyle='--')
+    axs[0].set_xlabel("time step")
+    axs[0].set_ylabel("line loading [%]")
+    axs[0].set_title("Maximum line loading")
+    axs[0].grid()
 
 
+    bus_voltages["maximum bus voltage"].plot(ax=axs[1])
+    axs[1].axhline(y=1.05, color='r', linestyle='--')
+    axs[1].set_xlabel("time step")
+    axs[1].set_ylabel("bus voltage [p.u]")
+    axs[1].set_title("Maximum bus voltage")
+    axs[1].grid()
+
+    bus_voltages["minimum bus voltage"].plot(ax=axs[2])
+    axs[2].axhline(y=0.95, color='r', linestyle='--')
+    axs[2].set_xlabel("time step")
+    axs[2].set_ylabel("bus voltage [p.u]")
+    axs[2].set_title("Minimum bus voltage")
+    axs[2].grid()
+
+    # Adjust layout to prevent clipping of titles and labels
+    plt.tight_layout()
+
+    # Show the figure
+    plt.show()
 
 
-
-
-
-
+grid_limit_violation_plt()
 
 
 
