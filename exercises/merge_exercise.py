@@ -1,3 +1,3 @@
 def hello():
-    name = "Lukas Kramer"
-    print(f"Hi, my name is {name}")
+    name = "Dennis"
+    print(f"Hi, my name is {name}.")
