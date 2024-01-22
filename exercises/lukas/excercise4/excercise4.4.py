@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 data = pd.read_csv("/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/timeseries_exercise_4.csv", sep=";")
 ds = DFData(data)
 def timeseries_area2(output_dir):
-    net = simple_test_net()
+    net = net_exam()
     n_timesteps = len(data.sgens)
     ds = create_data_source(n_timesteps)
     net = create_controllers(net, ds)
@@ -23,7 +23,7 @@ def timeseries_area2(output_dir):
     create_output_writer(net, time_steps, output_dir)
     run_timeseries(net, time_steps)
 
-def simple_test_net():
+def net_exam():
     net = pp.from_json(
         "/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/net_exercise_4.json")
     mg = top.create_nxgraph(net)

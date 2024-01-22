@@ -35,6 +35,7 @@ tc2 = plot.create_trafo_collection(net, trafo_area2.index, color ="green", size=
 gc2 = plot.create_ext_grid_collection(net, size=200, color="green", orientation=1.570796326794897, ext_grids=ext_grid_area2.index, edgecolor="green")
 
 plot.draw_collections([bc, lc, bc2, lc2, tc, gc1, gc3, gc4, tc2, gc2], figsize=(8,6))
+plt.savefig("Netzbild.pdf")
 plt.show()
 
 print(f"Die Anzahl der Knoten beträgt", len(buses_area2))
