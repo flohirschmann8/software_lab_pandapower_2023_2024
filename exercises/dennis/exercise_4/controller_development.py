@@ -14,12 +14,14 @@ from pandapower.control import ConstControl
 from pandapower.control.basic_controller import Controller
 from matplotlib import pyplot as plt
 # to make the plots pretty i use the seaborn module to set a good theme
-import seaborn as sns 
+import seaborn as sns
+from exercises.lukas.excercise4.tap_control import TapController
 sns.set_theme()
 
 # if this variable is set to True, then all nodes of the whole grid are selected and logged 
 # if this variable is set to False, then only the nodes of my subgrid are selected and logged 
-log_whole_grid = False
+log_whole_grid = True
+plot_lukas_grid_results = True
 
 class MyGrid():
     """
@@ -165,7 +167,6 @@ class W_Controller(Controller):
         elif self.element == "voltage":
             self.control_bus_voltage(net)
 
-
     def check_line_loading(self,net):
         current_max_line_loading = net.res_line.loc[self.subgrid.get_indices("line"),"loading_percent"].max()
         if current_max_line_loading <= self.max_limit:
@@ -201,7 +202,6 @@ class W_Controller(Controller):
             # probbaly generation/load problem in the grid
             net.sgen.loc[self.subgrid.get_indices("sgen"),"scaling"] *= 0.9
             net.load.loc[self.subgrid.get_indices("load"),"scaling"] *= 0.9
-
        
     def control_bus_voltage(self,net):
         max_vm_pu = net.res_bus.loc[self.subgrid.get_indices("bus"),"vm_pu"].max()
@@ -244,6 +244,8 @@ grid = pp.from_json(filename="net_exercise_4.json")
 
 my_area = 2 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2
 
+lukas_area = 3
+
 # get the connectet busses of my ext_grid from the topology module
 
 net_graph = top.create_nxgraph(net=grid)
@@ -270,6 +272,13 @@ my_sgen = grid.sgen.loc[my_sgen_indices,:]
 my_trafo_indices = list(tool.get_connected_elements(net=grid,element_type="trafo",buses=my_busses_indices))
 my_trafo = grid.trafo.loc[my_trafo_indices,:]
 
+# lukas trafo id
+lukas_tid = 0
+buses_area2 = list(top.connected_component(net_graph, bus=45))
+for i in grid.trafo.hv_bus.isin(buses_area2).index:
+    if grid.trafo.hv_bus.isin(buses_area2).loc[i]:
+        lukas_tid = i
+
 My_subgrid = MyGrid(whole_net=grid,bus_indices=my_busses_indices,line_indices=my_lines_indices,
                     load_indices=my_loads_indices,sgen_indices=my_sgen_indices,
                     ext_grid_indices=my_area, trafo_indices=my_trafo_indices)
@@ -286,8 +295,12 @@ ConstControl(net=grid, element='load', variable='scaling', element_index=grid.lo
 ConstControl(net=grid, element='sgen', variable='scaling', element_index=grid.sgen.index,
              data_source=ds, profile_name="sgens")
 
-W_Controller(net=grid,element="line_loading",my_grid=My_subgrid,limits_pu=[1.0])
-W_Controller(net=grid,element="voltage",my_grid=My_subgrid,limits_pu=[0.95,1.05])
+# creating my controlers
+#W_Controller(net=grid,element="line_loading",my_grid=My_subgrid,limits_pu=[1.0])
+#W_Controller(net=grid,element="voltage",my_grid=My_subgrid,limits_pu=[0.95,1.05])
+
+# creating lukas controler
+TapController(net=grid, tid=lukas_tid)
 
 # change the log variables according to the log level that was selected under the import statements
 if log_whole_grid:
@@ -314,12 +327,48 @@ ow.log_variable(table="res_bus", variable="vm_pu", index=bus_indices_to_log, eva
 ow.log_variable(table="res_bus", variable="vm_pu", index=bus_indices_to_log, eval_function=np.min, eval_name="min. voltage")
 ow.log_variable(table="res_line", variable="loading_percent", index=line_indices_to_log, eval_function=np.max, eval_name="max. line loading")
 
+# create an outputwriter for lukas subgrid
+
+lukas_ext_grid = grid.ext_grid.loc[[lukas_area],:]
+
+# to extract the int value of the bus to start the grid search it is nessesary to extract the values of the pandas dataframe and 
+# out of the array of vaules the first value is the int index of the bus that the external grid is connected to
+lukas_grid_search_starting_bus = lukas_ext_grid["bus"].values[0]
+# to extract the indices of the connectet in a list format components it is nessesary to convert the result of the topology function
+lukas_busses_indices = list(top.connected_component(mg=net_graph,bus=lukas_grid_search_starting_bus))
+lukas_busses = grid.bus.loc[lukas_busses_indices,:]
+
+lukas_lines_indices = list(tool.get_connected_elements(net=grid,element_type="line",buses=lukas_busses_indices))
+lukas_lines = grid.line.loc[lukas_lines_indices,:]
+
+lukas_loads_indices = list(tool.get_connected_elements(net=grid,element_type="load",buses=lukas_busses_indices))
+lukas_loads = grid.load.loc[lukas_loads_indices,:]
+
+lukas_sgen_indices = list(tool.get_connected_elements(net=grid,element_type="sgen",buses=lukas_busses_indices))
+lukas_sgen = grid.sgen.loc[lukas_sgen_indices,:]
+
+lukas_trafo_indices = list(tool.get_connected_elements(net=grid,element_type="trafo",buses=lukas_busses_indices))
+lukas_trafo = grid.trafo.loc[lukas_trafo_indices,:]
+
+output_path_lukas = os.path.join(os.getcwd(),"Lukas_subgrid_results")
+if not os.path.exists(output_path_lukas):
+    os.mkdir(output_path_lukas)
+
+ow_lukas = OutputWriter(net=grid, time_steps=profile_time_steps, output_path=output_path_lukas, output_file_type=".xlsx", log_variables=list())
+ow_lukas.log_variable(table="res_bus", variable="vm_pu", index=lukas_busses_indices, eval_function=np.max, eval_name="max. voltage")
+ow_lukas.log_variable(table="res_bus", variable="vm_pu", index=lukas_busses_indices, eval_function=np.min, eval_name="min. voltage")
+ow_lukas.log_variable(table="res_line", variable="loading_percent", index=lukas_lines_indices, eval_function=np.max, eval_name="max. line loading")
+
 run_timeseries(net=grid)
 
 # read in the results from the time series calculation
 
 df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus\\vm_pu.xlsx"),index_col=0)
 df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_percent.xlsx"),index_col=0)
+
+if plot_lukas_grid_results:
+    df_res_bus = pd.read_excel(io=os.path.join(output_path_lukas,"res_bus\\vm_pu.xlsx"),index_col=0)
+    df_res_line = pd.read_excel(io=os.path.join(output_path_lukas,"res_line\\loading_percent.xlsx"),index_col=0)
 
 # plot the results of the time series calculations
 
