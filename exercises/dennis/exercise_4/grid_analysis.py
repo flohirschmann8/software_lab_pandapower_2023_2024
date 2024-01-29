@@ -15,7 +15,7 @@ from matplotlib import pyplot as plt
 # to make the plots pretty i use the seaborn module to set a good theme
 import seaborn as sns 
 sns.set_theme()
-#%%
+
 ##########################################
 ######## import the grid #################
 ##########################################
@@ -114,7 +114,7 @@ plt.savefig(fname="Task_1_colored_grid.png")
 ##########################################
 ############# Task I.2 ###################
 ##########################################
-#%%
+#
 # load the time series data and create the data source object
 ts_profiles = pd.read_csv(filepath_or_buffer="timeseries_exercise_4.csv",sep=';',index_col=0)
 number_of_time_steps = len(ts_profiles["loads"])
@@ -144,7 +144,7 @@ ow.log_variable(table="res_line", variable="loading_percent", index=my_lines_ind
 run_timeseries(net=whole_grid, time_steps=profile_time_steps)
 
 
-# %% read in the results from the time series calculation
+# read in the results from the time series calculation
 
 df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus\\vm_pu.xlsx"),index_col=0)
 df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_percent.xlsx"),index_col=0)
@@ -152,7 +152,7 @@ df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_perce
 # plot the results of the time series calculations
 
 # plot of the voltage results
-# in the next line i create a figure with 2 subplots to show the voltage and line loading in one image
+# in the next line I create a figure with 2 subplots to show the voltage and line loading in one image
 fig, axs = plt.subplots(nrows=1,ncols=2,figsize=(15,8))
 fig.suptitle("Results from the time series calculation in task 2\nfor my subgrid without the controller working",size=18)
 axs[0].plot(df_res_bus.index,df_res_bus["max. voltage"],label="max. voltage")
@@ -167,3 +167,27 @@ axs[1].hlines(y=100.0, xmin=0, xmax=len(df_res_line.index),linestyles="dashed",l
 axs[1].set(xlabel="Time Step",ylabel="line loading [%]")
 axs[1].legend()
 plt.savefig("Task_2_subgrid_results.png")
+
+# statistics of the results
+
+max_vm_pu = round(df_res_bus["max. voltage"].max(),ndigits=2)
+min_vm_pu = round(df_res_bus["min. voltage"].min(),ndigits=2)
+
+p_overvoltage = round(len(df_res_bus[df_res_bus["max. voltage"] > 1.05])/number_of_time_steps,ndigits=4)*100
+p_undervoltage = round(len(df_res_bus[df_res_bus["min. voltage"] < 0.95])/number_of_time_steps,ndigits=4)*100
+p_voltage_violation = round(p_undervoltage + p_overvoltage,ndigits=2)
+
+max_line_loading = round(df_res_line["max. line loading"].max(),ndigits=2)
+p_line_overload = round(len(df_res_line[df_res_line["max. line loading"] > 100.0])/number_of_time_steps,ndigits=4)*100
+
+print(f"""max. voltage = {max_vm_pu} p.u.
+min. voltage = {min_vm_pu} p.u.
+---------------------------------
+in {p_overvoltage}% of all time steps the max. voltage at one bus is over the limit of 1.05 p.u.
+and in {p_undervoltage}% of all time steps the min. voltage at one bus is bellow the limit of 0.95 p.u.
+in total in {p_voltage_violation}% of all time steps the voltage at one bus lies outside of the limits.
+---------------------------------
+max. line loading = {max_line_loading}%
+---------------------------------
+in {p_line_overload}% of all time steps the line loading is over 100%
+""")
