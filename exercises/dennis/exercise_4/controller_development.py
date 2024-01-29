@@ -118,7 +118,7 @@ class W_Controller(Controller):
     ----------
     net : pandapowerNet
         Whole network over which the time series calculation is run.
-    elemnt : ["voltage","line_loading"]
+    element : ["voltage","line_loading"]
         The element of the results table the controller is suposed to control. 
         "voltage" if the controller should control the voltage levels
         "line_loading" if the controller should controlle the line loading
@@ -240,7 +240,8 @@ class W_Controller(Controller):
                 # negative reactive power points to capacitiv problem
                 self.pq_case = "q-"
 
-grid = pp.from_json(filename="net_exercise_4.json")
+grid = pp.from_json(
+        "/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/net_exercise_4.json")
 
 my_area = 2 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2
 
@@ -275,7 +276,9 @@ My_subgrid = MyGrid(whole_net=grid,bus_indices=my_busses_indices,line_indices=my
                     ext_grid_indices=my_area, trafo_indices=my_trafo_indices)
 
 # load the time series data and create the data source object
-ts_profiles = pd.read_csv(filepath_or_buffer="timeseries_exercise_4.csv",sep=';',index_col=0)
+ts_profiles = pd.read_csv(
+        "/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/timeseries_exercise_4.csv",
+        sep=";")
 number_of_time_steps = len(ts_profiles["loads"])
 profile_time_steps = range(0, number_of_time_steps)
 ds = DFData(df=ts_profiles)
@@ -314,12 +317,12 @@ ow.log_variable(table="res_bus", variable="vm_pu", index=bus_indices_to_log, eva
 ow.log_variable(table="res_bus", variable="vm_pu", index=bus_indices_to_log, eval_function=np.min, eval_name="min. voltage")
 ow.log_variable(table="res_line", variable="loading_percent", index=line_indices_to_log, eval_function=np.max, eval_name="max. line loading")
 
-run_timeseries(net=grid)
+# run_timeseries(net=grid)
 
 # read in the results from the time series calculation
 
-df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus\\vm_pu.xlsx"),index_col=0)
-df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_percent.xlsx"),index_col=0)
+df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus/vm_pu.xlsx"),index_col=0)
+df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line/loading_percent.xlsx"),index_col=0)
 
 # plot the results of the time series calculations
 

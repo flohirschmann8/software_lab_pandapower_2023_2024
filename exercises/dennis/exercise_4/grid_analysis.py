@@ -20,7 +20,8 @@ sns.set_theme()
 ######## import the grid #################
 ##########################################
 
-whole_grid = pp.from_json(filename="net_exercise_4.json")
+whole_grid = pp.from_json(
+        "/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/net_exercise_4.json")
 
 my_area = 2 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2
 
@@ -116,7 +117,9 @@ plt.savefig(fname="Task_1_colored_grid.png")
 ##########################################
 #%%
 # load the time series data and create the data source object
-ts_profiles = pd.read_csv(filepath_or_buffer="timeseries_exercise_4.csv",sep=';',index_col=0)
+ts_profiles = pd.read_csv(
+        "/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/timeseries_exercise_4.csv",
+        sep=";")
 number_of_time_steps = len(ts_profiles["loads"])
 profile_time_steps = range(0, number_of_time_steps)
 ds = DFData(df=ts_profiles)
@@ -146,8 +149,8 @@ run_timeseries(net=whole_grid, time_steps=profile_time_steps)
 
 # %% read in the results from the time series calculation
 
-df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus\\vm_pu.xlsx"),index_col=0)
-df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_percent.xlsx"),index_col=0)
+df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus/vm_pu.xlsx"),index_col=0)
+df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line/loading_percent.xlsx"),index_col=0)
 
 # plot the results of the time series calculations
 
