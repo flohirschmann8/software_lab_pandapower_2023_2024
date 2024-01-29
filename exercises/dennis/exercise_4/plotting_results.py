@@ -1,7 +1,8 @@
 # %%
 import pandas as pd 
 import matplotlib.pyplot as plt 
-import seaborn as sns 
+import seaborn as sns
+sns.set_theme()
 # %%
 res_bus_dennis = pd.read_excel(io="Task_4_subgrid_results\\res_bus\\vm_pu.xlsx", index_col=0)
 res_bus_lukas = pd.read_excel(io="Lukas_subgrid_results\\res_bus\\vm_pu.xlsx", index_col=0)
@@ -26,11 +27,19 @@ axs[0].hlines(y=1.05, xmin=0, xmax=len(res_bus_dennis.index),linestyles="dashed"
 axs[0].hlines(y=0.95, xmin=0, xmax=len(res_bus_dennis   .index),linestyles="dashed",color="red")
 axs[0].set(xlabel="Time Step",ylabel="voltage [p.u.]")
 axs[0].legend()
+# adjusting the position of the legend in the plot
+box_0 = axs[0].get_position()
+axs[0].set_position([box_0.x0, box_0.y0, box_0.width*0.9, box_0.height])
+axs[0].legend(loc='center right', bbox_to_anchor=(box_0.x1*1.33,0.5))
 
 axs[1].plot(res_line_dennis.index,res_line_dennis["max. line loading"],label="max. line loading Dennis")
 axs[1].plot(res_line_lukas.index,res_line_lukas["max. line loading"],label="max. line loading Lukas")
 axs[1].hlines(y=100.0, xmin=0, xmax=len(res_line_dennis.index),linestyles="dashed",label="limit",color="red")
 axs[1].set(xlabel="Time Step",ylabel="line loading [%]")
 axs[1].legend()
+# adjusting the position of the legend in the plot
+box_1 = axs[1].get_position()
+axs[1].set_position([box_1.x0, box_1.y0, box_1.width*0.9, box_1.height])
+axs[1].legend(loc='center right', bbox_to_anchor=(box_1.x1*1.375,0.5))
 
 plt.savefig("comp_res_dennis_lukas.png")

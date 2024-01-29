@@ -27,7 +27,7 @@
 
 \begin{document}
 
-\title{Examination paper for software Laboratory pandapower}
+\title{Examination paper for software laboratory pandapower}
 
 \author{\IEEEauthorblockN{Dennis Weispfennig}
 \IEEEauthorblockA{\textit{e\textsuperscript{2}n Energy Management} \\
@@ -117,8 +117,14 @@ In order to prevent the voltage and line loading from violation the limits I dec
 	\caption{Power flow results from the time series calculation with the controller working}
 	\label{fig:pf_res_task_4}
 \end{figure*}
+\begin{figure*}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{\figPath/comp_res_dennis_lukas.png}
+	\caption{Comparison of the time series calculation results of my and Lukas subgrids}
+	\label{fig:pf_res_task_5}
+\end{figure*}
 \subsection*{Voltage control}
-The first mode is \textit{voltage} mode in which the controller first tries to adjust the tap position of the transformers in the grid. If the maximum voltage in the subgrid is above the upper limit of 1.05 p.u. the tap position of the transformer is increased to lower the output voltage and check if this action solved the violation. Similarly the tap position is increase, if the minimum voltage in the subgrid is below the lower limit. Should the tap position reach the lowest/highest setting and the voltage violation is still present, then the controller internally switches to the line loading setting, because this setting adjusts the scaling factor of the loads and generators. But the convergance check is still done on the voltage limits and not the line loading.
+The first mode is \textit{voltage} mode in which the controller first tries to adjust the tap position of the transformers in the grid. If the maximum voltage in the subgrid is above the upper limit of 1.05 p.u. the tap position of the transformer is increased to lower the output voltage and check if this action solved the violation. Similarly the tap position is increase, if the minimum voltage in the subgrid is below the lower limit. Should the tap position reach the lowest/highest setting and the voltage violation is still present, then the controller internally switches to the line loading setting, because this setting adjusts the scaling factor of the loads and generators. But the convergence check is still done on the voltage limits and not the line loading.
 \subsection*{Line loading control}
 The second mode \textit{line\_loading} is designed to prevent the line loading from violation the limit. To achieve this task the controller first checks if a line in the subgrid exceeds the loading limit and then calculates if the overload is most probably caused by an excess of load demand of generation power. To do this the real power result of the slack is selected and if it is positive it's assumed that a excess of load demand is causing the overload. Then the current scaling factor ($\text{f}_{\text{p,i}}$) of of all loads in the subgrid is multiplied by 0.9 to reduce the scaling factor for the next iteration ($\text{f}_{\text{p,i+1}}$) a tiny bit until the overload disappears.
 \begin{equation}
@@ -132,9 +138,11 @@ In the case where the real power value of the slack is negative a excess of gene
 
 Or until the scaling factor reaches 1.0 and then the scaling factor for the generation is decreased in each iteration as it is done to the load scaling factor. Should the reactive power at the slack exceed the real power, then both loads and generators are scaled down by the controller, because the implementation of the reactive power control would depend on the nominal apparent power and the reactive power limits of each element in the subgrid.
 \subsection{Results}
-After designing the controller and implenenting it in the \textit{voltage} and \textit{line\_loading} mode, all violations are eliminated. Because the controller takes the subgrid as an input, the actions of it are limited to only the subgrid and the violations in the other subgrids occur regardless. The results are shown in \cref{fig:pf_res_task_4}. The limits for the voltage level and line loading is reached but never violated.
-\subsection{Interation with multiple controllers}
+After designing the controller and implementing it in the \textit{voltage} and \textit{line\_loading} mode, all violations are eliminated. Because the controller takes the subgrid as an input, the actions of it are limited to only the subgrid and the violations in the other subgrids occur regardless. The results are shown in \cref{fig:pf_res_task_4}. The limits for the voltage level and line loading is reached but never violated.
+\subsection{Interaction with multiple controllers}
 If more then one controller are present in a grid it is possible that those controllers interfere with each other. In pandapower each controller has a \textit{level} and \textit{order} that determine when each controller is executed. Controller with the same level are executed in series and are both required to converge in the same iteration. The higher the level of a controller the later it is run and so can overwrite the results of controllers in lower levels. This means that a controller in level 0 that previously converged might not be satisfied after the last controller in the highest level converged.
+\subsection*{Merging of different Git-Branches}
+To show, that the version control tool Git and the extension GitHub for distributed version control and collaboration is used during the software laboratory a controller from another student is implemented in my branch of the pandapower GitHub repository. I chose the controller from Lukas Kramer and implemented it into my script and ran another time series calculation to see, if my controller still operates as expected. In \cref{fig:pf_res_task_5} the maximum/minimum voltages and maximum line loading of my and Lukas subgrids are plotted and it shows, that my controller still works in my subgrid and Lukas controller works in his subgrid to prevent voltage violations. Lukas controller was not designed to prevent overloaded lines and so works as expected in his subgrid. 
 \bibliography{my_bib} 
 \bibliographystyle{ieeetr}
 

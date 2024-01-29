@@ -1,3 +1,4 @@
+# %%
 import os
 import numpy as np
 import pandas as pd
@@ -20,8 +21,7 @@ sns.set_theme()
 
 # if this variable is set to True, then all nodes of the whole grid are selected and logged 
 # if this variable is set to False, then only the nodes of my subgrid are selected and logged 
-log_whole_grid = True
-plot_lukas_grid_results = True
+log_whole_grid = False
 
 class MyGrid():
     """
@@ -244,7 +244,7 @@ grid = pp.from_json(filename="net_exercise_4.json")
 
 my_area = 2 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2
 
-lukas_area = 3
+lukas_area = 1
 
 # get the connectet busses of my ext_grid from the topology module
 
@@ -258,31 +258,20 @@ my_ext_grid = grid.ext_grid.loc[[my_area],:]
 grid_search_starting_bus = my_ext_grid["bus"].values[0]
 # to extract the indices of the connectet in a list format components it is nessesary to convert the result of the topology function
 my_busses_indices = list(top.connected_component(mg=net_graph,bus=grid_search_starting_bus))
-my_busses = grid.bus.loc[my_busses_indices,:]
 
 my_lines_indices = list(tool.get_connected_elements(net=grid,element_type="line",buses=my_busses_indices))
-my_lines = grid.line.loc[my_lines_indices,:]
 
 my_loads_indices = list(tool.get_connected_elements(net=grid,element_type="load",buses=my_busses_indices))
-my_loads = grid.load.loc[my_loads_indices,:]
 
 my_sgen_indices = list(tool.get_connected_elements(net=grid,element_type="sgen",buses=my_busses_indices))
-my_sgen = grid.sgen.loc[my_sgen_indices,:]
 
 my_trafo_indices = list(tool.get_connected_elements(net=grid,element_type="trafo",buses=my_busses_indices))
-my_trafo = grid.trafo.loc[my_trafo_indices,:]
 
-# lukas trafo id
-lukas_tid = 0
-buses_area2 = list(top.connected_component(net_graph, bus=45))
-for i in grid.trafo.hv_bus.isin(buses_area2).index:
-    if grid.trafo.hv_bus.isin(buses_area2).loc[i]:
-        lukas_tid = i
-
+# creating my subgrid object for my choosen subgrid
 My_subgrid = MyGrid(whole_net=grid,bus_indices=my_busses_indices,line_indices=my_lines_indices,
                     load_indices=my_loads_indices,sgen_indices=my_sgen_indices,
                     ext_grid_indices=my_area, trafo_indices=my_trafo_indices)
-
+# %%
 # load the time series data and create the data source object
 ts_profiles = pd.read_csv(filepath_or_buffer="timeseries_exercise_4.csv",sep=';',index_col=0)
 number_of_time_steps = len(ts_profiles["loads"])
@@ -296,9 +285,11 @@ ConstControl(net=grid, element='sgen', variable='scaling', element_index=grid.sg
              data_source=ds, profile_name="sgens")
 
 # creating my controlers
-#W_Controller(net=grid,element="line_loading",my_grid=My_subgrid,limits_pu=[1.0])
-#W_Controller(net=grid,element="voltage",my_grid=My_subgrid,limits_pu=[0.95,1.05])
+W_Controller(net=grid,element="line_loading",my_grid=My_subgrid,limits_pu=[1.0])
+W_Controller(net=grid,element="voltage",my_grid=My_subgrid,limits_pu=[0.95,1.05])
 
+# setting lukas trafo id for his controller
+lukas_tid = 1
 # creating lukas controler
 TapController(net=grid, tid=lukas_tid)
 
@@ -327,8 +318,7 @@ ow.log_variable(table="res_bus", variable="vm_pu", index=bus_indices_to_log, eva
 ow.log_variable(table="res_bus", variable="vm_pu", index=bus_indices_to_log, eval_function=np.min, eval_name="min. voltage")
 ow.log_variable(table="res_line", variable="loading_percent", index=line_indices_to_log, eval_function=np.max, eval_name="max. line loading")
 
-# create an outputwriter for lukas subgrid
-
+# define the external grid that belongs to lukas subgrid
 lukas_ext_grid = grid.ext_grid.loc[[lukas_area],:]
 
 # to extract the int value of the bus to start the grid search it is nessesary to extract the values of the pandas dataframe and 
@@ -336,24 +326,15 @@ lukas_ext_grid = grid.ext_grid.loc[[lukas_area],:]
 lukas_grid_search_starting_bus = lukas_ext_grid["bus"].values[0]
 # to extract the indices of the connectet in a list format components it is nessesary to convert the result of the topology function
 lukas_busses_indices = list(top.connected_component(mg=net_graph,bus=lukas_grid_search_starting_bus))
-lukas_busses = grid.bus.loc[lukas_busses_indices,:]
 
 lukas_lines_indices = list(tool.get_connected_elements(net=grid,element_type="line",buses=lukas_busses_indices))
-lukas_lines = grid.line.loc[lukas_lines_indices,:]
 
-lukas_loads_indices = list(tool.get_connected_elements(net=grid,element_type="load",buses=lukas_busses_indices))
-lukas_loads = grid.load.loc[lukas_loads_indices,:]
-
-lukas_sgen_indices = list(tool.get_connected_elements(net=grid,element_type="sgen",buses=lukas_busses_indices))
-lukas_sgen = grid.sgen.loc[lukas_sgen_indices,:]
-
-lukas_trafo_indices = list(tool.get_connected_elements(net=grid,element_type="trafo",buses=lukas_busses_indices))
-lukas_trafo = grid.trafo.loc[lukas_trafo_indices,:]
-
+# create the output path for lukas results
 output_path_lukas = os.path.join(os.getcwd(),"Lukas_subgrid_results")
 if not os.path.exists(output_path_lukas):
     os.mkdir(output_path_lukas)
 
+# create the outputwriter
 ow_lukas = OutputWriter(net=grid, time_steps=profile_time_steps, output_path=output_path_lukas, output_file_type=".xlsx", log_variables=list())
 ow_lukas.log_variable(table="res_bus", variable="vm_pu", index=lukas_busses_indices, eval_function=np.max, eval_name="max. voltage")
 ow_lukas.log_variable(table="res_bus", variable="vm_pu", index=lukas_busses_indices, eval_function=np.min, eval_name="min. voltage")
@@ -365,10 +346,6 @@ run_timeseries(net=grid)
 
 df_res_bus = pd.read_excel(io=os.path.join(output_path,"res_bus\\vm_pu.xlsx"),index_col=0)
 df_res_line = pd.read_excel(io=os.path.join(output_path,"res_line\\loading_percent.xlsx"),index_col=0)
-
-if plot_lukas_grid_results:
-    df_res_bus = pd.read_excel(io=os.path.join(output_path_lukas,"res_bus\\vm_pu.xlsx"),index_col=0)
-    df_res_line = pd.read_excel(io=os.path.join(output_path_lukas,"res_line\\loading_percent.xlsx"),index_col=0)
 
 # plot the results of the time series calculations
 

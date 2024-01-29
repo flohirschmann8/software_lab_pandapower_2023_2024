@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10.12) (preloaded format=pdflatex 2023.12.24)  24 DEC 2023 14:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10.12) (preloaded format=pdflatex 2023.12.24)  29 JAN 2024 07:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -523,15 +523,33 @@ File: images/Task_4_subgrid_results.png Graphic file (type png)
 Package pdftex.def Info: images/Task_4_subgrid_results.png  used on input line 
 116.
 (pdftex.def)             Requested size: 516.0pt x 278.8341pt.
+<images/comp_res_dennis_lukas.png, id=64, 988.6536pt x 489.9906pt>
+File: images/comp_res_dennis_lukas.png Graphic file (type png)
+<use images/comp_res_dennis_lukas.png>
+Package pdftex.def Info: images/comp_res_dennis_lukas.png  used on input line 1
+22.
+(pdftex.def)             Requested size: 516.0pt x 255.73863pt.
 
 [2
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.134 \subsection
-                 {Results} <./images/Task_2_subgrid_results.png>]
-(SP_Pandapower.bbl)
+l.140 \subsection
+                 {Results} <./images/Task_2_subgrid_results.png>] [3
+pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.140 \subsection
+                 {Results}
+pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.140 \subsection
+                 {Results} <./images/Task_4_subgrid_results.png> <./images/comp
+_res_dennis_lukas.png>] (SP_Pandapower.bbl)
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -543,36 +561,32 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[3
-pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) ha
-s been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.141 \end{document}
-                     <./images/Task_4_subgrid_results.png>] (SP_Pandapower.aux)
+[4
+
+] (SP_Pandapower.aux)
  ***********
 LaTeX2e <2023-11-01>
 L3 programming layer <2023-12-08>
  ***********
 Package rerunfilecheck Info: File `SP_Pandapower.out' has not changed.
-(rerunfilecheck)             Checksum: 7D887887438F71A953AB3F57825348F0;1687.
+(rerunfilecheck)             Checksum: 7D010B501D604D46E7BA2E350B2C18FB;1692.
  ) 
 Here is how much of TeX's memory you used:
- 13219 strings out of 474491
- 214010 string characters out of 5760248
+ 13231 strings out of 474491
+ 214925 string characters out of 5760248
  1944473 words of memory out of 5000000
- 35320 multiletter control sequences out of 15000+600000
+ 35329 multiletter control sequences out of 15000+600000
  663217 words of font info for 135 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,1438b,443s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,1438b,460s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <D:/MikTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><D:/MikTeX/fonts/type1/p
 ublic/amsfonts/cm/cmr10.pfb><D:/MikTeX/fonts/type1/public/amsfonts/cm/cmsy10.pf
 b><D:/MikTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><D:/MikTeX/fonts/type1/ur
 w/times/utmb8a.pfb><D:/MikTeX/fonts/type1/urw/times/utmbi8a.pfb><D:/MikTeX/font
 s/type1/urw/times/utmr8a.pfb><D:/MikTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on SP_Pandapower.pdf (3 pages, 505121 bytes).
+Output written on SP_Pandapower.pdf (4 pages, 717993 bytes).
 PDF statistics:
- 124 PDF objects out of 1000 (max. 8388607)
- 22 named destinations out of 1000 (max. 500000)
- 88 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 134 PDF objects out of 1000 (max. 8388607)
+ 25 named destinations out of 1000 (max. 500000)
+ 93 words of extra memory for PDF output out of 10000 (max. 10000000)
 
