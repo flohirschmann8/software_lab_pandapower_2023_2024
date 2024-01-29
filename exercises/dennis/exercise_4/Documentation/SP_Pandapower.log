@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10.12) (preloaded format=pdflatex 2023.12.24)  29 JAN 2024 07:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10.12) (preloaded format=pdflatex 2023.12.24)  29 JAN 2024 15:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -535,21 +535,21 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.140 \subsection
-                 {Results} <./images/Task_2_subgrid_results.png>] [3
+l.137 \end{equation}
+                     <./images/Task_2_subgrid_results.png>] [3
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.140 \subsection
-                 {Results}
+l.137 \end{equation}
+                    
 pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.140 \subsection
-                 {Results} <./images/Task_4_subgrid_results.png> <./images/comp
-_res_dennis_lukas.png>] (SP_Pandapower.bbl)
+l.137 \end{equation}
+                     <./images/Task_4_subgrid_results.png> <./images/comp_res_d
+ennis_lukas.png>] (SP_Pandapower.bbl)
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -574,17 +574,17 @@ Package rerunfilecheck Info: File `SP_Pandapower.out' has not changed.
 Here is how much of TeX's memory you used:
  13231 strings out of 474491
  214925 string characters out of 5760248
- 1944473 words of memory out of 5000000
+ 1945473 words of memory out of 5000000
  35329 multiletter control sequences out of 15000+600000
  663217 words of font info for 135 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,1438b,460s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,1438b,466s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <D:/MikTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><D:/MikTeX/fonts/type1/p
 ublic/amsfonts/cm/cmr10.pfb><D:/MikTeX/fonts/type1/public/amsfonts/cm/cmsy10.pf
 b><D:/MikTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><D:/MikTeX/fonts/type1/ur
 w/times/utmb8a.pfb><D:/MikTeX/fonts/type1/urw/times/utmbi8a.pfb><D:/MikTeX/font
 s/type1/urw/times/utmr8a.pfb><D:/MikTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on SP_Pandapower.pdf (4 pages, 717993 bytes).
+Output written on SP_Pandapower.pdf (4 pages, 718404 bytes).
 PDF statistics:
  134 PDF objects out of 1000 (max. 8388607)
  25 named destinations out of 1000 (max. 500000)

@@ -89,7 +89,7 @@ Throughout the seminar we learned to use the pandapower module in python to run 
 	\label{fig:grid_overview}
 \end{figure}
 
-For this examination I chose the subgrid number 2 from the slide 62 from the presentation that accompanies this software laboratory.\cite[S.62]{software.lab.pp.2023} In my chosen subgrid are in total 45 nodes, with 45 lines. The total line length is 28.23 km and in the subgrid are 44 loads and 44 static generators installed. All loads combined posses a nominal power of 18,16 MW and all static generators combined posses an installed nominal generation capacity of 20.63 MW. After running the given time series scaling factors for the loads and static generators the results show voltage violations and overloaded lines. To illustrate the power flow results the minimum and maximum p.u. voltage over all 45 nodes as well as the maximum line loading in my subgrid are logged and then plotted in \cref{fig:pf_res_task_2}. The figure shows, that the dominant violations occur with respect to the minimum and maximum voltages in the grid and overloaded lines occur less often.
+For this examination I chose the subgrid number 2 from the slide 62 from the presentation that accompanies this software laboratory.\cite[S.62]{software.lab.pp.2023} In my chosen subgrid are in total 45 nodes, with 45 lines. The total line length is 28.23 km and in the subgrid are 44 loads and 44 static generators installed. All loads combined posses a nominal power of 18,16 MW and all static generators combined posses an installed nominal generation capacity of 20.63 MW. After running the given time series scaling factors for the loads and static generators the results show voltage violations and overloaded lines. To illustrate the power flow results the minimum and maximum p.u. voltage over all 45 nodes as well as the maximum line loading in my subgrid are logged and then plotted in \cref{fig:pf_res_task_2}. The highest calculated voltage in my subgrid was 1.08 p.u. and the lowest calculated voltage was 0.91 p.u. in total 30,8\% of all time steps show a violation of the voltage limits. In 20,68\% of the calculations the voltage at one bus was higher then 1.05 p.u. and in 10,12\% the voltage was bellow 0.95 p.u. the line loading is comparison not so prominent. Only in 0.89\% of all time step calculations was the limit of 100\% line loading exceeded. The highest line loading calculated was 111,52\%.
 
 \begin{figure*}[htbp]
 	\centering
@@ -120,7 +120,7 @@ In order to prevent the voltage and line loading from violation the limits I dec
 \begin{figure*}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{\figPath/comp_res_dennis_lukas.png}
-	\caption{Comparison of the time series calculation results of my and Lukas subgrids}
+	\caption{Comparison of the time series calculation results of my and Lukas subgrids with working controllers in both subgrids}
 	\label{fig:pf_res_task_5}
 \end{figure*}
 \subsection*{Voltage control}
