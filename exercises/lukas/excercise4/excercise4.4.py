@@ -46,14 +46,12 @@ def create_data_source(n_timesteps):
 def create_controllers(net, ds):
     num_loads = net.load.bus.isin(buses_area2)
     num_sgen = net.sgen.bus.isin(buses_area2)
-    for i, value in enumerate(num_loads):
-        if value:
-            ConstControl(net, element="load", variable="scaling", element_index=[i],
-                         data_source=ds, profile_name=["loads"])
-    for j, value in enumerate(num_sgen):
-        if value:
-            ConstControl(net, element="sgen", variable="scaling", element_index=[j],
-                         data_source=ds, profile_name=["sgens"])
+    loads = pd.DataFrame(net.load[num_loads]).index
+    sgens = pd.DataFrame(net.sgen[num_sgen]).index
+    ConstControl(net, element="load", variable="scaling", element_index=loads,
+                 data_source=ds, profile_name="loads")
+    ConstControl(net, element="sgen", variable="scaling", element_index=sgens,
+                 data_source=ds, profile_name="sgens")
     return net
 
 def create_output_writer(net, time_steps, output_dir):
@@ -63,6 +61,7 @@ def create_output_writer(net, time_steps, output_dir):
     hv_bus = mask_buses_area2_hv.loc[mask_buses_area2_hv["vn_kv"] == 110.0, "vn_kv"].index
     mask_buses_area2 = mask_buses_area2_hv.drop(hv_bus).index
     mask_lines_area2 = net.line[(net.line.from_bus.isin(buses_area2))&net.line.to_bus.isin(buses_area2)].index
+    #Definition der zugehörigen Trafos und des ext.grid für Netzbereich 2
     for i in net.trafo.hv_bus.isin(buses_area2).index:
         if net.trafo.hv_bus.isin(buses_area2).loc[i]:
             trafo_area2 = i
