@@ -1,6 +1,4 @@
-import exercise_4
-
-
+import exercise
 
 
 
