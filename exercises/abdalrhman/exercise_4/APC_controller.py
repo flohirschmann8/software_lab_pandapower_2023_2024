@@ -66,16 +66,16 @@ class APC_controller(control.basic_controller.Controller):
         self.idx_lines = idx_lines
         self.curtailment_steps = curtailment_steps
         self.p_mw_original = net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)].values
+        self.scaling_original = net.sgen.scaling[net.sgen.index.isin(self.idx_sgens)].values
         self.p_mw = net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)].values
         self.in_service = net.sgen.in_service[idx_sgens]
         self.applied = False
 
     def is_converged(self, net):
-        ### check if there is a congestions
-        pp.runpp(net)
-        self.sorted_lines = net.res_line.loading_percent[net.line.index.isin(self.idx_lines)].sort_values(ascending=False)
-        # Identify the indices of congested lines
-        self.idx_congested_lines = self.sorted_lines.index[self.sorted_lines > 100]
+
+        ## check line congestions
+
+        self.idx_congested_lines = self.check_line_congestions(net)
 
         ## check if there is a congested line exists, take a controll step.
         if len(self.idx_congested_lines):
@@ -90,46 +90,64 @@ class APC_controller(control.basic_controller.Controller):
         # Write p to the bus within the specified net
         net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)] = self.p_mw
 
+    def check_line_congestions(self,net):
+        pp.runpp(net)
+        self.sorted_lines = net.res_line.loading_percent[net.line.index.isin(self.idx_lines)].sort_values(ascending=False)
+        # Identify the indices of congested lines
+        self.idx_congested_lines = self.sorted_lines.index[self.sorted_lines > 100]
+        return self.idx_congested_lines
+
     def control_step(self, net):
 
         for i in self.curtailment_steps:
 
+            ## check line congestions
+            self.idx_congested_lines = self.check_line_congestions(net)
+
             for j in range(len(self.idx_sgens)):
                 ### assign the sgens to be curtailed
-                current_idx_sgens = self.idx_sgens[:j+1]
+                current_idx_sgens = self.idx_sgens[len(self.idx_sgens)-j-1:]
                 ### apply curtailment considering the specified curtailment steps
 
+                ### maximum line loaded before appling the curtailment
                 before_max = self.sorted_lines.max()
 
+                #### apply the curtailment
                 net.sgen.p_mw[net.sgen.index.isin(current_idx_sgens)] *= i
 
-                ### check if there is a congestion still
-                pp.runpp(net)
+                ## check line congestions
+                self.idx_congested_lines = self.check_line_congestions(net)
 
-                self.sorted_lines = net.res_line.loading_percent[net.line.index.isin(self.idx_lines)].sort_values(
-                    ascending=False)
-                # Identify the indices of congested lines
-                self.idx_congested_lines = self.sorted_lines.index[self.sorted_lines > 100]
-
+                ### maximum line loaded after appling the curtailment
                 after_max = self.sorted_lines.max()
+
+                #### check if the curtailment increased the congestion
                 if (after_max - before_max) > 0:
-                    net.sgen.scaling *= 1.1
-                    # self.p_mw = self.p_mw_original
-                    # break
+
+                    ### incease the generatoin by scaling of 1.1
+                    net.sgen.scaling[net.sgen.index.isin(self.idx_sgens)] *= 1.1
+                    ### return the static generators to its original status
+                    net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)] = self.p_mw_original
+                    ### check line congestoins after updates
+                    self.idx_congested_lines = self.check_line_congestions(net)
 
                 if len(self.idx_congested_lines):
                     ### return the original static generators installed capacity before curtailment
-                    self.p_mw = self.p_mw_original
+                    # self.p_mw = self.p_mw_original
+                    net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)] = self.p_mw_original
                 else:
                     break
 
 
             if not len(self.idx_congested_lines):
                 self.applied = True
+                self.p_mw = net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)].values
+                self.write_to_net(net)
                 break
 
     def time_step(self, net, time):
-        self.p_mw = self.p_mw_original
+        net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)] = self.p_mw_original
+        # net.sgen.scaling[net.sgen.index.isin(self.idx_sgens)] = self.scaling_original
         self.applied = False
 
 #### import the grid
@@ -182,7 +200,7 @@ idx_buses,idx_lines,idx_loads,idx_sgens = grid_area4(net)
 
 # profiles = pd.read_csv(r".\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
 profiles = pd.read_csv(r"C:\Users\alfak\OneDrive\Desktop\GitHubProjects\software_lab_pandapower_2023_2024\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
-# profiles = profiles[40:50]
+# profiles = profiles[80:82]
 # profiles = profiles.reset_index()
 ds = DFData(profiles)
 
