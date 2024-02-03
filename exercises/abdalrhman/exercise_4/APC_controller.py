@@ -12,7 +12,7 @@ from pandapower.timeseries import DFData
 from pandapower.timeseries import OutputWriter
 from pandapower.timeseries.run_time_series import run_timeseries
 
-class APCController(control.basic_controller.Controller):
+class APC_controller(control.basic_controller.Controller):
     """
     Active Power Curtailment Controller
 
@@ -98,32 +98,43 @@ class APCController(control.basic_controller.Controller):
                 ### assign the sgens to be curtailed
                 current_idx_sgens = self.idx_sgens[:j+1]
                 ### apply curtailment considering the specified curtailment steps
+
+                before_max = self.sorted_lines.max()
+
                 net.sgen.p_mw[net.sgen.index.isin(current_idx_sgens)] *= i
 
                 ### check if there is a congestion still
                 pp.runpp(net)
+
                 self.sorted_lines = net.res_line.loading_percent[net.line.index.isin(self.idx_lines)].sort_values(
                     ascending=False)
                 # Identify the indices of congested lines
                 self.idx_congested_lines = self.sorted_lines.index[self.sorted_lines > 100]
+
+                after_max = self.sorted_lines.max()
+                if (after_max - before_max) > 0:
+                    net.sgen.scaling *= 1.1
+                    # self.p_mw = self.p_mw_original
+                    # break
 
                 if len(self.idx_congested_lines):
                     ### return the original static generators installed capacity before curtailment
                     self.p_mw = self.p_mw_original
                 else:
                     break
+
+
             if not len(self.idx_congested_lines):
+                self.applied = True
                 break
-        self.applied = True
 
     def time_step(self, net, time):
         self.p_mw = self.p_mw_original
         self.applied = False
 
-
 #### import the grid
-net = pp.from_json(r".\exercises\abdalrhman\exercise_4\net_exercise_4.json")
-# net = pp.from_json(r"C:\Users\alfak\OneDrive\Desktop\GitHubProjects\software_lab_pandapower_2023_2024\exercises\abdalrhman\exercise_4\net_exercise_4.json")
+# net = pp.from_json(r".\exercises\abdalrhman\exercise_4\net_exercise_4.json")
+net = pp.from_json(r"C:\Users\alfak\OneDrive\Desktop\GitHubProjects\software_lab_pandapower_2023_2024\exercises\abdalrhman\exercise_4\net_exercise_4.json")
 
 ### create function that the return buses and lines of the grid area 4
 ### Note i might introduce another grid into the function later for task III
@@ -171,7 +182,8 @@ idx_buses,idx_lines,idx_loads,idx_sgens = grid_area4(net)
 
 # profiles = pd.read_csv(r".\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
 profiles = pd.read_csv(r"C:\Users\alfak\OneDrive\Desktop\GitHubProjects\software_lab_pandapower_2023_2024\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
-
+# profiles = profiles[40:50]
+# profiles = profiles.reset_index()
 ds = DFData(profiles)
 
 ## create the const controllers
@@ -183,13 +195,13 @@ ConstControl(net, element='sgen', variable='scaling', element_index= idx_sgens,
              data_source=ds, profile_name="sgens")
 
 # creating an Object of my new build active power curtailment controller, that controller static generators
-APC_controller(net,idx_sgens,idx_lines, curtailment_steps=[0.7,0.4,0])
+APC_controller(net,idx_sgens,idx_lines, curtailment_steps=[0.9,0.8,0.7,0])
 
 
 #### define the outputwriter function
 def outputwriter():
 
-    output_dir = r".\exercises\abdalrhman\exercise_4\controlled_results"
+    output_dir = r".\exercises\abdalrhman\exercise_4\controlled_results1"
 
     ow = OutputWriter(net,time_steps= len(profiles),output_path=output_dir, output_file_type=".csv",log_variables=list())
     ow.log_variable('res_line', 'loading_percent', index=idx_lines)
@@ -207,8 +219,8 @@ run_timeseries(net, time_steps= len(profiles), continue_on_divergence=True)
 
 ### importing the results
 
-line_loadings = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results\res_line\loading_percent.csv", sep=';', index_col='Unnamed: 0')
-bus_voltages = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results\res_bus\vm_pu.csv", sep=';', index_col='Unnamed: 0')
+line_loadings = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results1\res_line\loading_percent.csv", sep=';', index_col='Unnamed: 0')
+bus_voltages = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results1\res_bus\vm_pu.csv", sep=';', index_col='Unnamed: 0')
 
 
 #######
