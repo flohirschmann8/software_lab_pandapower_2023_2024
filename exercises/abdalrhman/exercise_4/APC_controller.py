@@ -68,7 +68,7 @@ class APC_controller(control.basic_controller.Controller):
         self.p_mw_original = net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)].values
         self.scaling_original = net.sgen.scaling[net.sgen.index.isin(self.idx_sgens)].values
         self.p_mw = net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)].values
-        self.in_service = net.sgen.in_service[idx_sgens]
+        # self.in_service = net.sgen.in_service[self.idx_sgens]
         self.applied = False
 
     def is_converged(self, net):
@@ -138,7 +138,6 @@ class APC_controller(control.basic_controller.Controller):
                 else:
                     break
 
-
             if not len(self.idx_congested_lines):
                 self.applied = True
                 self.p_mw = net.sgen.p_mw[net.sgen.index.isin(self.idx_sgens)].values
@@ -195,8 +194,50 @@ def grid_area4(net):
 
     return idx_buses,idx_lines,idx_loads,idx_sgens
 
-idx_buses,idx_lines,idx_loads,idx_sgens = grid_area4(net)
+def grid_area2(net):
+    mg = top.create_nxgraph(net)
+    buses_area2 = list(top.connected_component(mg, bus=45))
 
+    ## indeces and number of the bueses
+    idx_buses = buses_area2
+    n_of_busus = len(idx_buses)
+    ## indeces and number of the lines
+
+    idx_lines = net.line.index[net.line.from_bus.isin(idx_buses) & net.line.to_bus.isin(idx_buses)]
+    n_of_lines = len(idx_lines)
+    ## indeces and  number of the static generators
+
+    idx_sgens = net.sgen.index[net.sgen.bus.isin(idx_buses)]
+    n_of_sgens = len(idx_sgens)
+
+    ## indeces and number of the loads
+
+    idx_loads = net.load.index[net.load.bus.isin(idx_buses)]
+    n_of_loads = len(idx_loads)
+
+    ##  indeces and number of the switches
+
+    idx_switches = net.switch.index[net.switch.bus.isin(idx_buses) & net.switch.element.isin(idx_lines)]
+    n_of_switches = len(idx_switches)
+    ##  indeces and number of the Trafos
+
+    idx_trafos = net.trafo.index[net.trafo.hv_bus.isin(idx_buses)]
+    n_of_trafos = len(idx_trafos)
+
+    ##  indeces and number of the ext grids
+
+    idx_ext_grids = net.ext_grid.index[net.ext_grid.bus.isin(idx_buses)]
+    n_of_ext_grids = len(idx_ext_grids)
+
+    return idx_buses,idx_lines,idx_loads,idx_sgens
+
+idx_buses4,idx_lines4,idx_loads4,idx_sgens4 = grid_area4(net)
+idx_buses2,idx_lines2,idx_loads2,idx_sgens2 = grid_area2(net)
+
+idx_buses = np.r_[idx_buses2,idx_buses4]
+idx_lines = np.r_[idx_lines2,idx_lines4]
+idx_loads = np.r_[idx_loads2,idx_loads4]
+idx_sgens = np.r_[idx_sgens2,idx_sgens4]
 
 # profiles = pd.read_csv(r".\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
 profiles = pd.read_csv(r"C:\Users\alfak\OneDrive\Desktop\GitHubProjects\software_lab_pandapower_2023_2024\exercises\abdalrhman\exercise_4\timeseries_exercise_4.csv", sep=';', index_col='Unnamed: 0')
@@ -206,20 +247,20 @@ ds = DFData(profiles)
 
 ## create the const controllers
 
-ConstControl(net, element='load', variable='scaling', element_index= idx_loads,
+ConstControl(net, element='load', variable='scaling', element_index= np.r_[idx_loads2,idx_loads4],
              data_source=ds, profile_name="loads")
 
-ConstControl(net, element='sgen', variable='scaling', element_index= idx_sgens,
+ConstControl(net, element='sgen', variable='scaling', element_index= np.r_[idx_sgens2,idx_sgens4],
              data_source=ds, profile_name="sgens")
 
 # creating an Object of my new build active power curtailment controller, that controller static generators
-APC_controller(net,idx_sgens,idx_lines, curtailment_steps=[0.9,0.8,0.7,0])
+APC_controller(net,idx_sgens=np.r_[idx_buses2,idx_buses4],idx_lines=np.r_[idx_lines2,idx_lines4], curtailment_steps=[0.9,0.8,0.7,0])
 
 
 #### define the outputwriter function
 def outputwriter():
 
-    output_dir = r".\exercises\abdalrhman\exercise_4\controlled_results1"
+    output_dir = r".\exercises\abdalrhman\exercise_4\controlled_results_abd_merged_lukas"
 
     ow = OutputWriter(net,time_steps= len(profiles),output_path=output_dir, output_file_type=".csv",log_variables=list())
     ow.log_variable('res_line', 'loading_percent', index=idx_lines)
@@ -237,8 +278,8 @@ run_timeseries(net, time_steps= len(profiles), continue_on_divergence=True)
 
 ### importing the results
 
-line_loadings = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results1\res_line\loading_percent.csv", sep=';', index_col='Unnamed: 0')
-bus_voltages = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results1\res_bus\vm_pu.csv", sep=';', index_col='Unnamed: 0')
+line_loadings = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results_abd_merged_lukas\res_line\loading_percent.csv", sep=';', index_col='Unnamed: 0')
+bus_voltages = pd.read_csv(r".\exercises\abdalrhman\exercise_4\controlled_results_abd_merged_lukas\res_bus\vm_pu.csv", sep=';', index_col='Unnamed: 0')
 
 
 #######
