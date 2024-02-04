@@ -11,6 +11,7 @@ from pandapower.control import ConstControl
 from pandapower.timeseries import DFData
 from pandapower.timeseries import OutputWriter
 from pandapower.timeseries.run_time_series import run_timeseries
+from exercises.lukas.excercise4.tap_control import TapController
 
 class APC_controller(control.basic_controller.Controller):
     """
@@ -247,34 +248,38 @@ ds = DFData(profiles)
 
 ## create the const controllers
 
-ConstControl(net, element='load', variable='scaling', element_index= np.r_[idx_loads2,idx_loads4],
+ConstControl(net, element='load', variable='scaling', element_index= idx_loads4,
              data_source=ds, profile_name="loads")
 
-ConstControl(net, element='sgen', variable='scaling', element_index= np.r_[idx_sgens2,idx_sgens4],
+ConstControl(net, element='sgen', variable='scaling', element_index= idx_sgens4,
              data_source=ds, profile_name="sgens")
 
-# creating an Object of my new build active power curtailment controller, that controller static generators
-APC_controller(net,idx_sgens=np.r_[idx_buses2,idx_buses4],idx_lines=np.r_[idx_lines2,idx_lines4], curtailment_steps=[0.9,0.8,0.7,0])
+# creating an Object of my new build active power curtailment controller, that control static generators
+
+APC_controller(net,idx_sgens=idx_buses4,idx_lines=idx_lines4, curtailment_steps=[0.9,0.8,0.7,0]
+               , level=1, order=1)
+
+TapController(net,tid=3, level=2, order=1)
 
 
 #### define the outputwriter function
 def outputwriter():
 
-    output_dir = r".\exercises\abdalrhman\exercise_4\controlled_results_abd_merged_lukas"
+    output_dir = r".\exercises\abdalrhman\exercise_4\controlled_results_abd_merged_lukas2"
 
     ow = OutputWriter(net,time_steps= len(profiles),output_path=output_dir, output_file_type=".csv",log_variables=list())
-    ow.log_variable('res_line', 'loading_percent', index=idx_lines)
-    ow.log_variable('res_line', 'loading_percent', index=idx_lines, eval_function=np.max, eval_name="maximum line loading")
-    ow.log_variable('res_bus', 'vm_pu', index=idx_buses)
-    ow.log_variable('res_bus', 'vm_pu', index=idx_buses, eval_function=np.max, eval_name="maximum bus voltage")
-    ow.log_variable('res_bus', 'vm_pu', index=idx_buses, eval_function=np.min, eval_name="minimum bus voltage")
+    ow.log_variable('res_line', 'loading_percent', index=idx_lines4)
+    ow.log_variable('res_line', 'loading_percent', index=idx_lines4, eval_function=np.max, eval_name="maximum line loading")
+    ow.log_variable('res_bus', 'vm_pu', index=idx_buses4)
+    ow.log_variable('res_bus', 'vm_pu', index=idx_buses4, eval_function=np.max, eval_name="maximum bus voltage")
+    ow.log_variable('res_bus', 'vm_pu', index=idx_buses4, eval_function=np.min, eval_name="minimum bus voltage")
 
 
 outputwriter()
 
 ### run timesieres
 
-run_timeseries(net, time_steps= len(profiles), continue_on_divergence=True)
+run_timeseries(net, time_steps= len(profiles), continue_on_divergence=False)
 
 ### importing the results
 
@@ -294,7 +299,7 @@ def grid_limit_violation_plt():
     axs[0].axhline(y=100, color='r', linestyle='--')
     axs[0].set_xlabel("time step")
     axs[0].set_ylabel("line loading [%]")
-    axs[0].set_title("Maximum line loading after activating APC controller")
+    axs[0].set_title("Maximum line loading after activating APC and Tap changer controllers")
     axs[0].grid()
 
 
@@ -302,14 +307,14 @@ def grid_limit_violation_plt():
     axs[1].axhline(y=1.05, color='r', linestyle='--')
     axs[1].set_xlabel("time step")
     axs[1].set_ylabel("bus voltage [p.u]")
-    axs[1].set_title("Maximum bus voltage")
+    axs[1].set_title("Maximum bus voltage after activating APC and Tap changer controllers")
     axs[1].grid()
 
     bus_voltages["minimum bus voltage"].plot(ax=axs[2])
     axs[2].axhline(y=0.95, color='r', linestyle='--')
     axs[2].set_xlabel("time step")
     axs[2].set_ylabel("bus voltage [p.u]")
-    axs[2].set_title("Minimum bus voltage")
+    axs[2].set_title("Minimum bus voltage after activating APC and Tap changer controllers")
     axs[2].grid()
 
     # Adjust layout to prevent clipping of titles and labels
