@@ -4,6 +4,7 @@ import pandapower as pp
 import pandapower.plotting as plot
 import pandapower.topology as top
 import matplotlib.pyplot as plt
+from fc_dataoutput_subnet import data_output_subnet
 
 """"
 Exercise
@@ -28,6 +29,9 @@ buses_area2 = list(top.connected_component(mg, bus=45))
 buses_area3 = list(top.connected_component(mg, bus=89))
 #Area 4
 buses_area4 = list(top.connected_component(mg, bus=134))
+
+#Printing number of buses, lines, loads and gens of selected subnet (area2)
+data_output_subnet(buses_area2, net)
 
 #Coloring buses in area2 - green
 bc_a2 = plot.create_bus_collection(net, buses=buses_area2, color="green", size=80, zorder=1)
