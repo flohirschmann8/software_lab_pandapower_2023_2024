@@ -49,6 +49,7 @@ for x in range(0, len(net.line)):
 lc = plot.create_line_collection(net, lines=lines, color="grey", zorder=2)
 
 plot.draw_collections([bc_a2, bc_rest, lc])
+
 #plt.show()
 
 
