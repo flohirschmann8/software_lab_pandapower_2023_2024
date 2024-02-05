@@ -9,10 +9,6 @@ from pandapower.timeseries.run_time_series import run_timeseries
 from pandapower.control import ConstControl
 from my_classes import MyGrid,W_Controller
 
-# if this variable is set to True, then all nodes of the whole grid are selected and logged 
-# if this variable is set to False, then only the nodes of my subgrid are selected and logged 
-log_whole_grid = False
-
 grid = pp.from_json(filename="net_exercise_4.json")
 
 my_area = 2 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2

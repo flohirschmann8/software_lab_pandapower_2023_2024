@@ -9,7 +9,7 @@ output_folder = "Task_4_results"
 
 # if this variable is set to True, then results of only my subgrid are plotted 
 # if this variable is set to False, then all results of the whole gtid are plotted
-plot_subgrid_results = False
+plot_subgrid_results = True
 
 # create the output path
 output_path = os.path.join(os.getcwd(),output_folder)
