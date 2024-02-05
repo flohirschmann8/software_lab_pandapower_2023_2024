@@ -1,8 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-import tempfile
-import random
 import pandapower as pp
 import pandapower.topology as top
 import pandapower.toolbox as tool
@@ -39,7 +37,6 @@ my_ext_grid = whole_grid.ext_grid.loc[[my_area],:]
 # out of the array of vaules the first value is the int index of the bus that the external grid is connected to
 grid_search_starting_bus = my_ext_grid["bus"].values[0]
 my_busses_indices = list(top.connected_component(mg=net_graph,bus=grid_search_starting_bus))
-my_busses = whole_grid.bus.loc[my_busses_indices,:]
 
 my_lines_indices = list(tool.get_connected_elements(net=whole_grid,element_type="line",buses=my_busses_indices))
 my_lines = whole_grid.line.loc[my_lines_indices,:]
@@ -51,7 +48,6 @@ my_sgen_indices = list(tool.get_connected_elements(net=whole_grid,element_type="
 my_sgen = whole_grid.sgen.loc[my_sgen_indices,:]
 
 my_trafo_indices = list(tool.get_connected_elements(net=whole_grid,element_type="trafo",buses=my_busses_indices))
-my_trafo = whole_grid.trafo.loc[my_trafo_indices,:]
 
 # get the general information about my grid area
 

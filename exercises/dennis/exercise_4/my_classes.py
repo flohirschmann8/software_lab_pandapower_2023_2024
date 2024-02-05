@@ -162,7 +162,7 @@ class W_Controller(Controller):
         self.determain_pq_case(net)
         if self.pq_case == "p+":
             # probbaly load problem in the grid
-            # in every control step decrease the load power by 90% of its previous value
+            # in every control step decrease the load power to 90% of its previous value
             net.load.loc[self.subgrid.get_indices("load"),"scaling"] *= 0.9            
             
         elif self.pq_case == "p-":
@@ -174,14 +174,14 @@ class W_Controller(Controller):
                 # increase the load scaling factor by 10% in each control step with respect to its last value
                 net.load.loc[self.subgrid.get_indices("load"),"scaling"] *= 1.1
             else:
-                # if the load scaling factor is at its peack, then in every control step decrease the load power by 90% of its previous value
+                # if the load scaling factor is at its peack, then in every control step decrease the load power to 90% of its previous value
                 net.load.loc[self.subgrid.get_indices("load"),"scaling"] = 1.0
                 net.sgen.loc[self.subgrid.get_indices("sgen"),"scaling"] *= 0.9            
         
         else:
             # the Problem is one of reactive power and is not easy to solve.
             # the simplest solution is to decrease the load and generation at the same time
-            # in every control step decrease the load/generation power by 90% of its previous value
+            # in every control step decrease the load/generation power to 90% of its previous value
             net.sgen.loc[self.subgrid.get_indices("sgen"),"scaling"] *= 0.9
             net.load.loc[self.subgrid.get_indices("load"),"scaling"] *= 0.9
 
