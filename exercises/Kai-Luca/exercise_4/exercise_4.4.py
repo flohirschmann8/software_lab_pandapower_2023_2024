@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import pandas as pd
-import tempfile
 from pandapower.timeseries import DFData
 from pandapower.timeseries import OutputWriter
 from pandapower.timeseries.run_time_series import run_timeseries
 from pandapower.control import ConstControl
+from Controller import KLController
 
 
 matplotlib.use("Qt5Agg")
@@ -41,6 +41,7 @@ def create_controllers(net, buses_area3, ds):
                  data_source=ds, profile_name="loads")
     ConstControl(net, element="sgen", variable="scaling", element_index=sgens,
                  data_source=ds, profile_name="sgens")
+    KLController(net, max_limit_pu=1.05, min_limit_pu=0.95)
     return net
 
 
@@ -61,10 +62,9 @@ def timeseries_area3(output_dir):
     time_steps = range(0, n_timesteps)
     create_output_writer(net, buses_area3, time_steps, output_dir=output_dir)
     run_timeseries(net, time_steps)
-    print(net.res_line.loading_percent)
 
 
-output_dir = r"C:\Users\User\Documents\Uni\Master\1. Semester\Pandapower\Hausarbeit\Zeitreihen_4.2\Output dir"
+output_dir = r"C:\Users\User\Documents\Uni\Master\1. Semester\Pandapower\Hausarbeit\Zeitreihen_4.4\Output dir"
 print("Results can be found in your Zeitreihen folder: {}".format(output_dir))
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
@@ -73,17 +73,11 @@ timeseries_area3(output_dir)
 vm_pu_file = os.path.join(output_dir, "res_bus", "vm_pu.xlsx")
 vm_pu = pd.read_excel(vm_pu_file, index_col=0)
 vm_pu.plot(label="vm_pu")
+plt.hlines(y=1.05, xmin=0, xmax=len(vm_pu))
+plt.hlines(y=0.95, xmin=0, xmax=len(vm_pu), color="orange")
 plt.xlabel("time step")
 plt.ylabel("Spannungspegel [p.u.]")
 plt.title("Spannungspegel")
 plt.grid()
 plt.show()
 
-line_loading_file = os.path.join(output_dir, "res_line", "loading_percent.xlsx")
-line_loading = pd.read_excel(line_loading_file, index_col=0)
-line_loading.plot(label="Leitungsauslastung")
-plt.xlabel("time step")
-plt.ylabel("Leitungsauslastung [%]")
-plt.title("Leitungsauslastung")
-plt.grid()
-plt.show()

@@ -41,11 +41,12 @@ lc3 = plot.create_line_collection(net, lines_area3, color="blue", zorder=2)
 gc3 = plot.create_ext_grid_collection(net, size=250, color="blue", ext_grids=ext_grid_area3.index, edgecolor="blue")
 
 #Plotten aller Collections
-#plot.draw_collections([lc, bc, gc1, gc2, gc4, bc3, lc3, gc3], figsize=(8,6))
-#plt.show()
+plot.draw_collections([lc, bc, gc1, gc2, gc4, bc3, lc3, gc3], figsize=(8,6))
+plt.show()
 
 print(f"Anzahl der Knoten: ", len(buses_area3))
 print(f"Anzahl der Leitungen: ", len(lines_area3))
 print(f"Anzahl der Lasten: ", len(load_area3))
 print(f"Anzahl der Einspeiser: ", len(sgen_area3))
+
 
