@@ -1,18 +1,25 @@
 
-def data_output_subnet(buses_subnet, network):
+
+def data_output_subnet(buses_subnet, lines_subnet, network):
     #Printing number of lines, buses, loads feed-in plants in subnetwork
     # Print number of buses
     nr_buses = len(buses_subnet)
-    print("The network includes ", nr_buses, "buses.")
+    print("The subnet includes ", nr_buses, "buses.")
 
     # Print number of lines
-    nr_lines = len(buses_subnet)
-    print("The network includes ", nr_lines, "lines.")
+    #nr_lines = len(buses_subnet)
+    #print("The complete network includes ", nr_lines, "lines.")
+
+    # Print number of lines
+
+
+    print("The subnetwork includes ", len(lines_subnet), "lines.")
 
 
     # Print number of loads
     nr_loads = []
     x = buses_subnet[0]
+
 
     for x in range(buses_subnet[0], buses_subnet[-1]):
         nr_loads.append(network.load[network.load.bus == x])
@@ -32,3 +39,9 @@ def data_output_subnet(buses_subnet, network):
 
 
 
+
+'''
+    for x in range(buses_subnet[0], buses_subnet[-1]):
+        nr_lines.append(network.line[network.line.from_bus == x])
+
+'''
