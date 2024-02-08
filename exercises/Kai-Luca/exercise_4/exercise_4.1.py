@@ -2,8 +2,11 @@ import pandapower as pp
 import pandapower.topology as top
 import pandapower.networks as nw
 import pandapower.plotting as plot
+import matplotlib
 import matplotlib.pyplot as plt
 import pandapower.toolbox as tool
+
+matplotlib.use("Qt5Agg")
 
 
 net = pp.from_json("C:/Users/User/Documents/Uni/Master/1. Semester/Pandapower/Hausarbeit/Netz/net_exercise_4.json")

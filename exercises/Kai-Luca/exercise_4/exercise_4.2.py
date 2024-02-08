@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import pandas as pd
-import tempfile
 from pandapower.timeseries import DFData
 from pandapower.timeseries import OutputWriter
 from pandapower.timeseries.run_time_series import run_timeseries
