@@ -50,6 +50,6 @@ plt.show()
 print(f"Anzahl der Knoten: ", len(buses_area3))
 print(f"Anzahl der Leitungen: ", len(lines_area3))
 print(f"Anzahl der Lasten: ", len(load_area3))
-print(f"Anzahl der Einspeiser: ", len(sgen_area3))
+print(f"Anzahl der Generatoren: ", len(sgen_area3))
 
 
