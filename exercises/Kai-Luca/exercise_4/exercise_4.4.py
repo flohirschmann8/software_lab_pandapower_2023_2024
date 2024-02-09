@@ -44,22 +44,19 @@ def create_controllers(net, loads_area3, sgens_area3, ds):
     return net
 
 
-def create_output_writer(net, buses_area3, time_steps, output_dir):
+def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
-    mask_hv_buses_area3 = net.bus.loc[buses_area3]
-    mask_lines_area3 = net.line[(net.line.from_bus.isin(buses_area3)) & net.line.to_bus.isin(buses_area3)].index
 
-    ow.log_variable("res_line", "loading_percent", index=mask_lines_area3, eval_function=np.max, eval_name="Max. Leitungsauslastung")
-    ow.log_variable("res_bus", "vm_pu", index=mask_hv_buses_area3, eval_function=np.max, eval_name="Max. Spannungspegel")
-    ow.log_variable("res_bus", "vm_pu", index=mask_hv_buses_area3, eval_function=np.min, eval_name="Min. Spannungspegel")
+    ow.log_variable("res_line", "loading_percent", index=lines_area3, eval_function=np.max, eval_name="Max. Leitungsauslastung")
+    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="Max. Spannungspegel")
+    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="Min. Spannungspegel")
 
 def timeseries_area3(output_dir):
     net, buses_area3, lines_area3, loads_area3, sgens_area3 = area3_net()
-    # n_timesteps = len(data.loads)
     profiles, ds, n_timesteps = create_data_source()
     create_controllers(net, loads_area3, sgens_area3, ds)
     time_steps = range(0, n_timesteps)
-    create_output_writer(net, buses_area3, time_steps, output_dir=output_dir)
+    create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir)
     run_timeseries(net, time_steps)
 
 
@@ -75,7 +72,7 @@ vm_pu = pd.read_excel(vm_pu_file, index_col=0)
 vm_pu.plot(label="vm_pu")
 plt.hlines(y=1.05, xmin=0, xmax=len(vm_pu), linestyles="dashed", label="max. limit", color="red")
 plt.hlines(y=0.95, xmin=0, xmax=len(vm_pu), linestyles="dashed", color="red", label="min. limit")
-plt.xlabel("Zeitschritt")
+plt.xlabel("Zeitschritte")
 plt.ylabel("Spannungspegel [p.u.]")
 plt.title("Spannungspegel")
 plt.legend()

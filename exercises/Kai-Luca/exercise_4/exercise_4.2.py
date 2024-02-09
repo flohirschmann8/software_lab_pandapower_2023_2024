@@ -43,6 +43,7 @@ def create_controllers(net, loads_area3, sgens_area3, ds):
 
 
 def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
+    #
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
 
     ow.log_variable("res_line", "loading_percent", index=lines_area3, eval_function=np.max, eval_name="max. Leitungsauslastung")
@@ -50,8 +51,8 @@ def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
     ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="min. Spannungspegel")
 
 def timeseries_area3(output_dir):
+    #
     net, buses_area3, lines_area3, loads_area3, sgens_area3 = area3_net()
-    #n_timesteps = len(data.loads)
     profiles, ds, n_timesteps = create_data_source()
     create_controllers(net, loads_area3, sgens_area3, ds)
     time_steps = range(0, n_timesteps)
@@ -81,8 +82,8 @@ plt.show()
 line_loading_file = os.path.join(output_dir, "res_line", "loading_percent.xlsx")
 line_loading = pd.read_excel(line_loading_file, index_col=0)
 line_loading.plot(label="Leitungsauslastung")
-plt.hlines(y=100, xmin=0, xmax=len(line_loading), linestyles="dashed", color="red", label="limit")
-plt.xlabel("Zeitschritt")
+plt.hlines(y=100, xmin=0, xmax=len(line_loading), linestyles="dashed", color="red", label="max. limit")
+plt.xlabel("Zeitschritte")
 plt.ylabel("Leitungsauslastung [%]")
 plt.title("Leitungsauslastung")
 plt.legend()
