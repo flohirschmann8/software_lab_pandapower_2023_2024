@@ -60,6 +60,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
+
 '''
 
 #Simulate time series
