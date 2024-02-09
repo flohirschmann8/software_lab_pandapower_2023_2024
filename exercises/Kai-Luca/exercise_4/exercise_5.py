@@ -35,14 +35,20 @@ def area3_net():
     lines_area3 = list(tool.get_connected_elements(net=net, element_type="line", buses=buses_area3))
     loads_area3 = list(tool.get_connected_elements(net=net, element_type="load", buses=buses_area3))
     sgens_area3 = list(tool.get_connected_elements(net=net, element_type="sgen", buses=buses_area3))
-    return net, buses_area3, lines_area3, loads_area3, sgens_area3, buses_area2
+    loads_area2 = list(tool.get_connected_elements(net=net, element_type="load", buses=buses_area2))
+    sgens_area2 = list(tool.get_connected_elements(net=net, element_type="sgen", buses=buses_area2))
+    return net, buses_area3, lines_area3, loads_area3, sgens_area3, buses_area2, loads_area2, sgens_area2
 
 
-def create_controllers(net, loads_area3, sgens_area3, ds):
+def create_controllers(net, loads_area3, sgens_area3, loads_area2, sgens_area2, ds):
     #TapController von Lukas eingefügt und trafo id auf 1 gesetzt
     ConstControl(net, element="load", variable="scaling", element_index=loads_area3,
                  data_source=ds, profile_name="loads")
     ConstControl(net, element="sgen", variable="scaling", element_index=sgens_area3,
+                 data_source=ds, profile_name="sgens")
+    ConstControl(net, element="load", variable="scaling", element_index=loads_area2,
+                 data_source=ds, profile_name="loads")
+    ConstControl(net, element="sgen", variable="scaling", element_index=sgens_area2,
                  data_source=ds, profile_name="sgens")
     KLController(net, max_limit_pu=1.05, min_limit_pu=0.95)
     TapController(net, tid = 1)
@@ -53,7 +59,6 @@ def create_output_writer(net, buses_area3, buses_area2, lines_area3, time_steps,
     #ow für max. und min. Spannungspegel area_2 -> von TapController geregelt
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
 
-    ow.log_variable("res_line", "loading_percent", index=lines_area3, eval_function=np.max, eval_name="Max. Leitungsauslastung")
     ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="Max. Spannungspegel Kai-Luca")
     ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="Min. Spannungspegel Kai-Luca")
 
@@ -61,9 +66,9 @@ def create_output_writer(net, buses_area3, buses_area2, lines_area3, time_steps,
     ow.log_variable("res_bus", "vm_pu", index=buses_area2, eval_function=np.min, eval_name="Min. Spannungspegel Lukas")
 
 def timeseries_area3(output_dir):
-    net, buses_area3, lines_area3, loads_area3, sgens_area3, buses_area2 = area3_net()
+    net, buses_area3, lines_area3, loads_area3, sgens_area3, buses_area2, loads_area2, sgens_area2 = area3_net()
     profiles, ds, n_timesteps = create_data_source()
-    create_controllers(net, loads_area3, sgens_area3, ds)
+    create_controllers(net, loads_area3, sgens_area3, loads_area2, sgens_area2, ds)
     time_steps = range(0, n_timesteps)
     create_output_writer(net, buses_area3, lines_area3, time_steps, buses_area2, output_dir)
     run_timeseries(net, time_steps)
