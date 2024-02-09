@@ -69,15 +69,15 @@ if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 timeseries_area3(output_dir)
 
+
 vm_pu_file = os.path.join(output_dir, "res_bus", "vm_pu.xlsx")
 vm_pu = pd.read_excel(vm_pu_file, index_col=0)
 vm_pu.plot(label="vm_pu")
 plt.hlines(y=1.05, xmin=0, xmax=len(vm_pu), linestyles="dashed", label="max. limit", color="red")
 plt.hlines(y=0.95, xmin=0, xmax=len(vm_pu), linestyles="dashed", color="red", label="min. limit")
-plt.xlabel("time step")
+plt.xlabel("Zeitschritt")
 plt.ylabel("Spannungspegel [p.u.]")
 plt.title("Spannungspegel")
 plt.legend()
 plt.grid()
 plt.show()
-
