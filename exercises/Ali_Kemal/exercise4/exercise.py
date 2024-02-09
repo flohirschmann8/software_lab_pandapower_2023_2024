@@ -1,15 +1,8 @@
-import numpy as np
-import pandas as pd
-from pandas import *
 import pandapower as pp
 import pandapower.plotting as plot
 import pandapower.topology as top
-from pandapower.control.controller.const_control import ConstControl
 import matplotlib.pyplot as plt
-import csv
 from fc_dataoutput_subnet import data_output_subnet
-
-
 """"
 Exercise
 
@@ -18,31 +11,21 @@ The developed controller should be combined with controllers of other students, 
 """
 
 #Load network "net" from json file
-
 net = pp.from_json("/Users/alikemalkoc/Library/Mobile Documents/com~apple~CloudDocs/Uni - Aktuelles Semester/01_Softwarepraktikum Pandapower/Übungen/exercise 4/Exam Files-20240128/net_exercise_4.json")
 
-#Task 1 - Grid analyse
-
-#Split network in 4 subnetworks
+# Task 1 - Grid analyse
+# Split network in 4 subnetworks
 mg = top.create_nxgraph(net)
-#Area 1
+# Area 1
 buses_area1 = list(top.connected_component(mg, bus=0))
-#Area 2
+# Area 2
 buses_area2 = list(top.connected_component(mg, bus=45))
-#Area 3
+# Area 3
 buses_area3 = list(top.connected_component(mg, bus=89))
-#Area 4
+# Area 4
 buses_area4 = list(top.connected_component(mg, bus=134))
 
-
-
-#Coloring buses in area2 - green
-bc_a2 = plot.create_bus_collection(net, buses=buses_area2, color="green", size=80, zorder=1)
-
-#Coloring buses of area 1,3 and 4 - grey
-bc_rest = plot.create_bus_collection(net, buses=buses_area1 + buses_area3 + buses_area4, color="grey", size=80, zorder=1)
-
-#Determine lines of subnet
+# Determine lines of subnet
 lines_area2 = []
 
 for idx, line in net.line.iterrows():
@@ -52,7 +35,7 @@ for idx, line in net.line.iterrows():
         lines_area2.append(idx)
 
 
-#Drawing lines in gree and subnet-2 lines ingreen
+# Drawing lines of area 1,3,4 in gree and lines of area 2 in green
 lines_all = []
 x = 0
 for x in range(0, len(net.line)):
@@ -62,52 +45,20 @@ for x in range(0, len(net.line)):
 lines_other_subnets = [element for element in lines_all if element not in lines_area2]
 
 lc_rest = plot.create_line_collection(net, lines=lines_other_subnets, color="grey", zorder=2)
-
 lc_a2 = plot.create_line_collection(net, lines=lines_area2, color="green", zorder=2)
 
+# Coloring buses of area 1,3 and 4 in grey and buses of area2 in green
+bc_rest = plot.create_bus_collection(net, buses=buses_area1 + buses_area3 + buses_area4, color="grey", size=80, zorder=1)
+bc_a2 = plot.create_bus_collection(net, buses=buses_area2, color="green", size=80, zorder=1)
 
 plot.draw_collections([bc_a2, bc_rest, lc_a2, lc_rest])
-
 plt.show()
 
-#Printing number of buses, lines, loads and gens of selected subnet (area2)
+# Output number of buses, lines, loads and gens of selected subnet (area2)
 data_output_subnet(buses_area2, lines_area2, net)
 
-#Simulate time series
-
-time = []
-loads = []
-sgens = []
-
-# Open and read csv file
-with open('timeseries_exercise_4.csv', newline='') as csvfile:
-    csv_reader = csv.reader(csvfile, delimiter=";")
-    # Write rows time, loads, and sgens into lists
-    for row in csv_reader:
-        # Die Werte der aktuellen Zeile den entsprechenden Listen hinzufügen
-        time.append(row[0])
-        loads.append(row[1])
-        sgens.append(row[2])
-
-
-# Convert lists in datatype: float
-x = 1
-for x in range(1, (len(time)-1)):
-    time[x] = float(time[x])
-    loads[x] = float(loads[x])
-    sgens[x] = float(sgens[x])
-    x += 1
-
-plt.plot(time, loads, label="loads")
-plt.plot(time, sgens, label="sgens")
-
-plt.legend()
-#plt.show()
-
-# Detect violated lines and overloaded buses
+# Detect and output violated lines and overloaded buses
 pp.runpp(net)
-
-
 
 overloaded_lines = []
 x = 0
@@ -116,9 +67,6 @@ for x in range(0, (len(net.res_line-1))):
         overloaded_lines.append(x)
     x += 1
 
-print("The overloaded lines are: ", overloaded_lines)
-
-
 overloaded_buses = []
 x = 0
 for x in range(0, (len(net.res_bus)-1)):
@@ -126,9 +74,8 @@ for x in range(0, (len(net.res_bus)-1)):
         overloaded_buses.append(x)
     x += 1
 
+print("The overloaded lines are: ", overloaded_lines)
 print("The overloaded buses are: ", overloaded_buses)
-#print(net.line)
-#print(net.load)
 
 
 
