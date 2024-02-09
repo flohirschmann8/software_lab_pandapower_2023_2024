@@ -44,8 +44,6 @@ def create_controllers(net, loads_area3, sgens_area3, ds):
 
 def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
-    #mask_hv_buses_area3 = net.bus.loc[buses_area3]
-    #mask_lines_area3 = net.line[(net.line.from_bus.isin(buses_area3)) & net.line.to_bus.isin(buses_area3)].index
 
     ow.log_variable("res_line", "loading_percent", index=lines_area3, eval_function=np.max, eval_name="max. Leitungsauslastung")
     ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="max. Spannungspegel")
