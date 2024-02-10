@@ -1,6 +1,7 @@
 import pandapower.plotting as plot
 import matplotlib.pyplot as plt
 
+# Creating variables
 lines_subnet = []
 lines_all = []
 
@@ -28,6 +29,6 @@ def draw_grid(network, buses_subnet, buses_other, show):
     bc_other = plot.create_bus_collection(network, buses=buses_other, color="grey", size=80, zorder=1)
     bc_subnet = plot.create_bus_collection(network, buses=buses_subnet, color="green", size=80, zorder=1)
 
-    plot.draw_collections([bc_subnet, bc_other, lc_subnet, lc_other])
     if show:
+        plot.draw_collections([bc_subnet, bc_other, lc_subnet, lc_other])
         plt.show()

@@ -3,6 +3,7 @@ import pandapower.topology as top
 import determine_grid_assets
 import drawing_grid
 import analyzing_violations_and_overloads
+import timeseries_1
 
 """"
 Exercise
@@ -30,9 +31,18 @@ lines_area2 = drawing_grid.lines_subnet
 # Output number of buses, lines, loads and gens of selected subnet (area2)
 determine_grid_assets.data_output_subnet(buses_area2, lines_area2, net)
 
-# Drawing grid
+# Drawing grid (To show set "show"=True)
 drawing_grid.draw_grid(net, buses_area2, buses_other, show=False)
 
-# Detect and output violated lines and overloaded buses
+# Output maximum line-loading + maximum and minimum bus-voltage (To show set "show"=True)
+analyzing_violations_and_overloads.extrem_values(net, lines_area2, buses_area2, show=False)
+
+# Run network + detect and output violated lines and overloaded buses
 pp.runpp(net)
-analyzing_violations_and_overloads.overload(net)
+analyzing_violations_and_overloads.overload(net, 100, 0.95, 1.05)
+
+# Run timeseries way 1
+load, generation = timeseries_1.run_ts(net, "timeseries_exercise_4.csv")
+
+# Run timeseries way 2
+

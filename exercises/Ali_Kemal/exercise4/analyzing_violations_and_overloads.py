@@ -3,7 +3,7 @@ import pandapower as pp
 
 
 # Plotting maximum line-loading + maximum and minimum bus voltages
-def extrem_values(network, lines_subnet, buses_subnet):
+def extrem_values(network, lines_subnet, buses_subnet, show):
     # Determine maximum line-loading
     max_ll = 0
     max_ll_index = 0
@@ -44,7 +44,6 @@ def extrem_values(network, lines_subnet, buses_subnet):
     print("The maximum bus-voltage is at bus ", max_bv_index, " with ", max_bv, " percent.")
     print("The minimum bus-voltage is at bus ", min_bv_index, " with ", min_bv, " percent.")
 
-
     # Plotting maximum line-loading + maximum and minimum bus voltage
     t = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     a = [max_ll, max_ll, max_ll, max_ll,max_ll , max_ll, max_ll, max_ll, max_ll, max_ll]
@@ -59,24 +58,25 @@ def extrem_values(network, lines_subnet, buses_subnet):
     plt.title("Maximum and minimum values")
     plt.legend()
     plt.grid(True)
-    #plt.show()
+    if show:
+        plt.show()
 
 
-def overload(network):
+def overload(network, max_line_loading, min_bus_voltage, max_bus_voltage):
     # Detect and output violated lines and overloaded buses
     pp.runpp(network)
 
     overloaded_lines = []
     x = 0
     for x in range(0, (len(network.res_line - 1))):
-        if network.res_line.loading_percent[x] > 100:
+        if network.res_line.loading_percent[x] > max_line_loading:
             overloaded_lines.append(x)
         x += 1
 
     overloaded_buses = []
     x = 0
     for x in range(0, (len(network.res_bus) - 1)):
-        if network.res_bus.vm_pu[x] > 1.05 or network.res_bus.vm_pu[x] < 0.95:
+        if network.res_bus.vm_pu[x] > max_bus_voltage or network.res_bus.vm_pu[x] < min_bus_voltage:
             overloaded_buses.append(x)
         x += 1
 
