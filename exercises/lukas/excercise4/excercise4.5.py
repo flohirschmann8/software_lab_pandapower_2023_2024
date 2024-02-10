@@ -15,7 +15,7 @@ from exercises.lukas.excercise4.tap_control import TapController
 whole_grid = pp.from_json(
         "/Users/lukaskramer/Documents/Uni/Mastersemester1/Pandapower/Unterlagen/Exam_Files/net_exercise_4.json")
 
-my_area = 2 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2
+my_area = 3 # i choose the area 3 to be mine for this exercise and because the indexing of the ext_grids starts at 0 not 1, my ext_grid index is 2
 
 ##########################################
 ############# Task I.1 ###################
