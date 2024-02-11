@@ -45,7 +45,7 @@ def create_controllers(net, loads_area3, sgens_area3, ds):
 
 
 def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
-    #erstellt eine xlsx Datei und schreibt dort die Werte der max. Leitungsauslastung, min. und max. Spannungspegel
+    #schreibt die Werte der max. Leitungsauslastung, min. und max. Spannungspegel in eine xlsx_datei
     #für die verschiedenen Zeitschritte rein
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
 
