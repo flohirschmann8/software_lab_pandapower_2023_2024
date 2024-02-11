@@ -34,10 +34,10 @@ lines_area2 = drawing_grid.lines_subnet
 loads_subnet, sgens_subnet = determine_grid_assets.data_output_subnet(buses_area2, lines_area2, net)
 
 # Drawing grid (To show set "show"=True)
-drawing_grid.draw_grid(net, buses_area2, buses_other, show=False)
+drawing_grid.draw_grid(net, buses_area2, buses_other, show=True)
 
 # Output maximum line-loading + maximum and minimum bus-voltage (To show set "show"=True)
-analyzing_violations_and_overloads.extrem_values(net, lines_area2, buses_area2, show=False)
+analyzing_violations_and_overloads.extrem_values(net, lines_area2, buses_area2, show=True)
 
 # Run network + detect and output violated lines and overloaded buses
 pp.runpp(net)
