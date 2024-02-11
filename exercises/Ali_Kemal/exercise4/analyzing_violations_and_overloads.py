@@ -55,8 +55,8 @@ def extrem_values(network, lines_subnet, buses_subnet, show):
     plt.plot(t, c, label="Minimum bus-voltage")
 
     plt.xlabel("Time")
-    plt.title("Maximum and minimum values")
-    plt.legend()
+    plt.title("Maximum and minimum values before timeseries")
+    #plt.legend()
     plt.grid(True)
     if show:
         plt.show()

@@ -4,12 +4,14 @@ import determine_grid_assets
 import drawing_grid
 import analyzing_violations_and_overloads
 import timeseries_1
+import os
+import tempfile
+
 
 """"
 Exercise
 
 Programming a time series simulation and developing a controller, which solves earlier detected violations.
-The developed controller should be combined with controllers of other students, later.
 """
 
 #Load network "net" from json file
@@ -29,7 +31,7 @@ lines_area2 = drawing_grid.lines_subnet
 
 
 # Output number of buses, lines, loads and gens of selected subnet (area2)
-determine_grid_assets.data_output_subnet(buses_area2, lines_area2, net)
+loads_subnet, sgens_subnet = determine_grid_assets.data_output_subnet(buses_area2, lines_area2, net)
 
 # Drawing grid (To show set "show"=True)
 drawing_grid.draw_grid(net, buses_area2, buses_other, show=False)
@@ -41,8 +43,12 @@ analyzing_violations_and_overloads.extrem_values(net, lines_area2, buses_area2, 
 pp.runpp(net)
 analyzing_violations_and_overloads.overload(net, 100, 0.95, 1.05)
 
-# Run timeseries way 1
-load, generation = timeseries_1.run_ts(net, "timeseries_exercise_4.csv")
+# Set dir to save results
+dir = os.path.join(tempfile.gettempdir(), "time_series_area2")
 
-# Run timeseries way 2
+# Create path, if it doesn't exist
+if not os.path.exists(dir):
+    os.mkdir(dir)
+
+timeseries_1.run_ts(net, buses_area2, loads_subnet, sgens_subnet, dir)
 

@@ -1,3 +1,30 @@
+
+'''
+#Determining lines of subnet - DRAFT
+
+lines_subnet = []
+x = 0
+y = 1
+for x in range(0, len(net.line)):
+    if net.line.from_bus[x] == buses_area2[y]:
+        lines_subnet.append(x)
+        x = 0
+        y += 1
+        print("met")
+    else:
+        x += 1
+    print(x)
+    print(y)
+
+
+print("The subnet includes ", len(lines_subnet), "lines.")
+
+print (net.line.from_bus[0])
+print (buses_area2[0])
+'''
+'''
+
+
 import csv
 import matplotlib.pyplot as plt
 import exercise
@@ -59,7 +86,7 @@ def timeseries():
 
 #--------------------------
 
-''''
+
 
 # Fügen Sie eine Zeitreihensimulation hinzu
 pp.create_time_steps(exercise.net, time_steps)

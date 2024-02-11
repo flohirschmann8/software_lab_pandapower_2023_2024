@@ -1,51 +1,38 @@
 import pandas as pd
-import pandapower as pp
+from pandapower.control.controller.const_control import ConstControl
+from pandapower.timeseries.data_sources.frame_data import DFData
+from pandapower.timeseries.run_time_series import run_timeseries
+from pandapower.timeseries.output_writer import OutputWriter
+import os
 import matplotlib.pyplot as plt
 
+data = pd.read_csv("timeseries_exercise_4.csv", sep=";", header=0)
+ds = DFData(data)
 
-def run_ts(network, csv_path):
-    # 2. Laden der CSV-Datei
-    csv_file = csv_path
-    df = pd.read_csv(csv_file, header=0, delimiter=";")
 
-    # 3. Zeitreihenanalyse durchführen
-    for index, row in df.iterrows():
-        # Skalierung der Lasten und Generatoren
-        load_scaling = row["loads"]
-        sgen_scaling = row["sgens"]
-    
-        # Skalierung der Lasten
-        for load in network.load.iterrows():
-            network.load.at[load[0], 'p_mw'] *= load_scaling
-    
-        # Skalierung der Generatoren
-        for gen in network.gen.iterrows():
-            network.sgen.at[gen[0], 'p_mw'] *= sgen_scaling
-    
-        # 4. Simulation durchführen
-        pp.runpp(network)
+def run_ts(network, buses_area2, loads_subnet, sgens_subnet, dir):
+    # Loading loads and sgens of area2 in pd.DataFrame
+    ld_a2 = pd.DataFrame(network.load[loads_subnet]).index
+    sg_a2 = pd.DataFrame(network.sgen[sgens_subnet]).index
 
-        # Ergebnisse sammeln
-        load_total = network.res_load['p_mw'].sum()
-        generation_total = network.res_sgen['p_mw'].sum()
-    return load_total, generation_total
-        # print(load_total)
-        # print(generation_total)
+    # Determine time_steps through lenght of loads
+    time_steps = range(0, len(data.loads))
 
-        # results = results.append({'Time Step': row['Time Step'], 'Load': load_total, 'Generation': generation_total},
-        #                         ignore_index=True)
+    # ow set
+    ow = OutputWriter(network, time_steps)
 
-    # Ergebnisse speichern
-    #results.to_csv('ergebnisse.csv', index=False)
-'''
-    # Ergebnisse plotten
-    plt.figure(figsize=(10, 6))
-    plt.plot(results['Time Step'], results['Load'], label='Total Load')
-    plt.plot(results['Time Step'], results['Generation'], label='Total Generation')
-    plt.xlabel('Time Step')
-    plt.ylabel('Power (kW)')
-    plt.title('Total Load and Generation over Time')
+    # CC set to scale loads and sgens through values in csv
+    ConstControl(network, element="load", variable="scaling", element_index=ld_a2, data_source=ds, profile_name="loads")
+    ConstControl(network, element="sgen", variable="scaling", element_index=sg_a2, data_source=ds, profile_name="sgens")
+    # Run timeseries
+    run_timeseries(network, time_steps)
+    # Plot results of time_series
+    vm_pu_file = os.path.join(dir, "res_bus", "vm_pu.xlsx")
+    vm_pu = pd.read_excel(vm_pu_file, index_col=0)
+    vm_pu.plot()
+    plt.xlabel("Time")
+    plt.ylabel("Voltage")
     plt.legend()
-    plt.grid(True)
+    plt.grid(visible=True)
     plt.show()
-'''
+
