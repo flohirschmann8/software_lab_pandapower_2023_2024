@@ -36,6 +36,7 @@ def area3_net():
 
 
 def create_controllers(net, loads_area3, sgens_area3, ds):
+    #KLController einfügen
     ConstControl(net, element="load", variable="scaling", element_index=loads_area3,
                  data_source=ds, profile_name="loads")
     ConstControl(net, element="sgen", variable="scaling", element_index=sgens_area3,
@@ -48,8 +49,8 @@ def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
 
     ow.log_variable("res_line", "loading_percent", index=lines_area3, eval_function=np.max, eval_name="Max. Leitungsauslastung")
-    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="Max. Spannungspegel")
-    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="Min. Spannungspegel")
+    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="max. Spannungspegel")
+    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="min. Spannungspegel")
 
 def timeseries_area3(output_dir):
     net, buses_area3, lines_area3, loads_area3, sgens_area3 = area3_net()
@@ -73,7 +74,7 @@ vm_pu.plot(label="vm_pu")
 plt.hlines(y=1.05, xmin=0, xmax=len(vm_pu), linestyles="dashed", label="max. limit", color="red")
 plt.hlines(y=0.95, xmin=0, xmax=len(vm_pu), linestyles="dashed", color="red", label="min. limit")
 plt.xlabel("Zeitschritte")
-plt.ylabel("Spannungspegel [p.u.]")
+plt.ylabel("Spannungspegel [pu]")
 plt.title("Spannungspegel")
 plt.legend()
 plt.grid()

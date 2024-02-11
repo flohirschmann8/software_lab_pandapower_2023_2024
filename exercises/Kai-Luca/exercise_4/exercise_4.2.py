@@ -25,6 +25,7 @@ def create_data_source():
 
 
 def area3_net():
+    #Elemente von area_3 listen
     net = pp.from_json("C:/Users/User/Documents/Uni/Master/1. Semester/Pandapower/Hausarbeit/Netz/net_exercise_4.json")
     mg = top.create_nxgraph(net)
     buses_area3 = list(top.connected_component(mg, bus=89))
@@ -35,6 +36,7 @@ def area3_net():
 
 
 def create_controllers(net, loads_area3, sgens_area3, ds):
+    #Skaliert die Bezugsleistungen und Einspeiseleistungen der Lasten und Generatoren aus area_3 mit den Werten aus der csv Datei
     ConstControl(net, element="load", variable="scaling", element_index=loads_area3,
                  data_source=ds, profile_name="loads")
     ConstControl(net, element="sgen", variable="scaling", element_index=sgens_area3,
@@ -43,7 +45,8 @@ def create_controllers(net, loads_area3, sgens_area3, ds):
 
 
 def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
-    #
+    #erstellt eine xlsx Datei und schreibt dort die Werte der max. Leitungsauslastung, min. und max. Spannungspegel
+    #für die verschiedenen Zeitschritte rein
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
 
     ow.log_variable("res_line", "loading_percent", index=lines_area3, eval_function=np.max, eval_name="max. Leitungsauslastung")
@@ -51,14 +54,12 @@ def create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir):
     ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="min. Spannungspegel")
 
 def timeseries_area3(output_dir):
-    #
     net, buses_area3, lines_area3, loads_area3, sgens_area3 = area3_net()
     profiles, ds, n_timesteps = create_data_source()
     create_controllers(net, loads_area3, sgens_area3, ds)
     time_steps = range(0, n_timesteps)
     create_output_writer(net, buses_area3, lines_area3, time_steps, output_dir=output_dir)
     run_timeseries(net, time_steps)
-    print(net.res_line.loading_percent)
 
 
 output_dir = r"C:\Users\User\Documents\Uni\Master\1. Semester\Pandapower\Hausarbeit\Zeitreihen_4.2\Output dir"
