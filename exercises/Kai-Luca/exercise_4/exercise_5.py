@@ -40,7 +40,7 @@ def area3_net():
 
 
 def create_controllers(net, loads_area3, sgens_area3, loads_area1, sgens_area1, ds):
-    #constcontroler für für Lasten und Generatoren von Area_1 hinzufügen
+    #ConstControl für für Lasten und Generatoren von Area_1 hinzufügen
     ConstControl(net, element="load", variable="scaling", element_index=loads_area3,
                  data_source=ds, profile_name="loads")
     ConstControl(net, element="sgen", variable="scaling", element_index=sgens_area3,
@@ -51,7 +51,9 @@ def create_controllers(net, loads_area3, sgens_area3, loads_area1, sgens_area1, 
                  data_source=ds, profile_name="sgens")
 
     KLController(net, max_limit_pu=1.05, min_limit_pu=0.95)
+    #Netz auswählen, dass der W_Controller regeln soll -> area_1
     dennis_net = MyGrid(net, 0)
+    #W_Controller hinzufügen, regelt Spannungen von area_1
     W_Controller(net, element="voltage", my_grid=dennis_net,limits_pu=[0.95, 1.05])
     return net
 
@@ -60,12 +62,12 @@ def create_output_writer(net, buses_area3, time_steps, output_dir):
     #ow für Spannungspegel, welche von WController geregelt werden, hinzufügen
     ow = OutputWriter(net, time_steps, output_path=output_dir, output_file_type=".xlsx", log_variables=list())
 
-    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="Max. Spannungspegel area_3")
-    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="Min. Spannungspegel area_3")
+    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.max, eval_name="max. Spannungspegel area_3")
+    ow.log_variable("res_bus", "vm_pu", index=buses_area3, eval_function=np.min, eval_name="min. Spannungspegel area_3")
 
     dennis_net = MyGrid(net, 0)
-    ow.log_variable("res_bus", "vm_pu", index=dennis_net.get_indices("bus"), eval_function=np.max, eval_name="Max. Spannungspegel area_1")
-    ow.log_variable("res_bus", "vm_pu", index=dennis_net.get_indices("bus"), eval_function=np.min, eval_name="Min. Spannungspegel area_1")
+    ow.log_variable("res_bus", "vm_pu", index=dennis_net.get_indices("bus"), eval_function=np.max, eval_name="max. Spannungspegel area_1")
+    ow.log_variable("res_bus", "vm_pu", index=dennis_net.get_indices("bus"), eval_function=np.min, eval_name="min. Spannungspegel area_1")
 def timeseries_area3(output_dir):
     net, buses_area3, lines_area3, loads_area3, sgens_area3, buses_area1, loads_area1, sgens_area1 = area3_net()
     profiles, ds, n_timesteps = create_data_source()
@@ -86,8 +88,8 @@ vm_pu = pd.read_excel(vm_pu_file, index_col=0)
 vm_pu.plot(label="vm_pu")
 plt.hlines(y=1.05, xmin=0, xmax=len(vm_pu), linestyles="dashed", label="max. limit", color="red")
 plt.hlines(y=0.95, xmin=0, xmax=len(vm_pu), linestyles="dashed", color="red", label="min. limit")
-plt.xlabel("Zeitschritt")
-plt.ylabel("Spannungspegel [p.u.]")
+plt.xlabel("Zeitschritte")
+plt.ylabel("Spannungspegel [pu]")
 plt.title("Spannungspegel")
 plt.legend()
 plt.grid()
